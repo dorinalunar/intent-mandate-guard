@@ -1,0 +1,70 @@
+{
+  "protocol": "IntentMandateGuard/v2.0",
+  "description": "Reference semantic mandates, execution intents, and GenVM AI assessment matrices for IntentMandateGuard.py",
+  "scenarios": [
+    {
+      "id": "compliant_dex_swap",
+      "rules": [
+        "Maximum slippage tolerance must not exceed 50 bps.",
+        "Only USDC to WETH swaps on approved routers are permitted."
+      ],
+      "methods": ["exactInputSingle", "multicall"],
+      "quota_cap": 50000,
+      "tx_cap": 10,
+      "ttl_seconds": 86400,
+      "weight": 5000,
+      "intent": {
+        "method": "exactInputSingle",
+        "target": "uniswap-v3-router.eth",
+        "payload": "{\"tokenIn\":\"USDC\",\"tokenOut\":\"WETH\",\"amount\":5000,\"maxSlippageBps\":25}"
+      },
+      "mock_assessments": [
+        { "index": 0, "outcome": "PASS", "certainty": "solid" },
+        { "index": 1, "outcome": "PASS", "certainty": "solid" }
+      ],
+      "expected_state": "ACTIVE"
+    },
+    {
+      "id": "rejected_excessive_slippage",
+      "rules": [
+        "Maximum slippage tolerance must not exceed 50 bps.",
+        "No leveraged or margin positions are allowed."
+      ],
+      "methods": ["exactInputSingle"],
+      "quota_cap": 25000,
+      "tx_cap": 5,
+      "ttl_seconds": 7200,
+      "weight": 3000,
+      "intent": {
+        "method": "exactInputSingle",
+        "target": "uniswap-v3-router.eth",
+        "payload": "{\"tokenIn\":\"USDC\",\"tokenOut\":\"WETH\",\"amount\":3000,\"maxSlippageBps\":250}"
+      },
+      "mock_assessments": [
+        { "index": 0, "outcome": "FAIL", "certainty": "solid" },
+        { "index": 1, "outcome": "PASS", "certainty": "solid" }
+      ],
+      "expected_state": "DENIED"
+    },
+    {
+      "id": "ambiguous_bridge_transfer_denied",
+      "rules": [
+        "Cross-chain bridge transfers must specify an explicit L2 destination chain ID and recipient."
+      ],
+      "methods": ["bridgeAsset"],
+      "quota_cap": 100000,
+      "tx_cap": 4,
+      "ttl_seconds": 43200,
+      "weight": 10000,
+      "intent": {
+        "method": "bridgeAsset",
+        "target": "canonical-bridge.eth",
+        "payload": "{\"asset\":\"USDC\",\"amount\":10000,\"note\":\"send to fast destination\"}"
+      },
+      "mock_assessments": [
+        { "index": 0, "outcome": "AMBIGUOUS", "certainty": "moderate" }
+      ],
+      "expected_state": "DENIED"
+    }
+  ]
+}

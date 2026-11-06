@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IntentMandateGuard — GenLayer Command Center</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --panel: #131b2e;
+      --border: #233152;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #22c55e;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    h1 { margin: 0; font-size: 1.5rem; }
+    .badge {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .card h2 { margin-top: 0; font-size: 1.1rem; color: var(--accent); }
+    label { display: block; font-size: 0.82rem; color: var(--muted); margin: 10px 0 4px; }
+    input, textarea {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    button {
+      background: var(--accent);
+      color: #090d16;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    button:hover { background: var(--accent-hover); color: #fff; }
+    button.audit-btn { background: var(--success); color: #052e16; }
+    pre {
+      background: #05080f;
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      max-height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>IntentMandateGuard <span class="badge">IntentMandateGuard/v2.0</span></h1>
+        <small style="color: var(--muted);">Bounded Semantic Execution Mandates &amp; Single-Use Intent Tickets on GenVM</small>
+      </div>
+      <div class="btn-row" style="margin-top:0;">
+        <button id="connectBtn">Connect MetaMask</button>
+      </div>
+    </header>
+
+    <div class="card" style="margin-bottom: 20px;">
+      <h2>Contract Configuration &amp; Views</h2>
+      <label>Deployed IntentMandateGuard Address (GenLayer Studio Chain ID 61999)</label>
+      <input id="contractAddr" value="0xBfD7843AF81097Faec3Ce05A86B7E106BB78024e" />
+      <div class="grid" style="margin-top:10px; margin-bottom:0;">
+        <div>
+          <label>Query Mandate ID / Ticket ID</label>
+          <input id="lookupId" type="number" value="1" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="readVersionBtn">Read protocol_version()</button>
+        <button id="readMandateBtn">Read get_mandate()</button>
+        <button id="readTicketBtn">Read get_ticket()</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>1. Register Semantic Mandate</h2>
+        <label>Operator Address</label>
+        <input id="opAddr" value="0x38409cCa5f5ca70F3fe189638a87862318b478dd" />
+        <label>Executor Address</label>
+        <input id="execAddr" value="0x38409cCa5f5ca70F3fe189638a87862318b478dd" />
+        <label>Semantic Rules (JSON Array)</label>
+        <textarea id="rulesJson" rows="3">["Swap slippage must not exceed 50 bps.","Only USDC to WETH swaps on approved routers are permitted."]</textarea>
+        <label>Allowed Methods (JSON Array)</label>
+        <input id="methodsJson" value='["exactInputSingle","multicall"]' />
+        <div class="grid" style="margin-bottom:0;">
+          <div><label>Quota Cap</label><input id="quotaCap" type="number" value="50000" /></div>
+          <div><label>Tx Cap</label><input id="txCap" type="number" value="10" /></div>
+          <div><label>TTL (sec)</label><input id="mandateTtl" type="number" value="86400" /></div>
+        </div>
+        <div class="btn-row">
+          <button id="registerMandateBtn">Sign &amp; Register Mandate</button>
+          <button id="reproducibleFlowBtn" class="audit-btn">Submit + Finalized Readback</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Issue / Redeem Single-Use Ticket</h2>
+        <div class="grid" style="margin-bottom:0;">
+          <div><label>Mandate ID</label><input id="ticketMandateId" type="number" value="1" /></div>
+          <div><label>Sequence Nonce</label><input id="seqNonce" type="number" value="101" /></div>
+          <div><label>Ticket ID (for Redeem)</label><input id="redeemTicketId" type="number" value="1" /></div>
+        </div>
+        <label>Intent Payload JSON (method, target, payload)</label>
+        <textarea id="intentJson" rows="4">{"method":"exactInputSingle","target":"uniswap-v3-router.eth","payload":"{\"tokenIn\":\"USDC\",\"tokenOut\":\"WETH\",\"amount\":2500,\"maxSlippageBps\":25}"}</textarea>
+        <div class="grid" style="margin-bottom:0;">
+          <div><label>Quota Weight</label><input id="ticketWeight" type="number" value="2500" /></div>
+          <div><label>Ticket TTL (sec)</label><input id="ticketTtl" type="number" value="600" /></div>
+        </div>
+        <div class="btn-row">
+          <button id="issueTicketBtn">Issue Ticket (GenVM AI Audit)</button>
+          <button id="redeemTicketBtn">Redeem Ticket</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Execution &amp; Audit Console</h2>
+      <pre id="consoleOutput">Ready. Connect wallet and select an operation.</pre>
+    </div>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
