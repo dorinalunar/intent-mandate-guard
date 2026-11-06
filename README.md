@@ -1,4 +1,4 @@
-# IntentMandateGuard — Bounded Semantic Execution Mandates on GenLayer
+# IntentMandateGuard - Bounded Semantic Execution Mandates on GenLayer
 
 **IntentMandateGuard** (`IntentMandateGuard/v2.0`) is a non-custodial GenLayer Intelligent Contract and Web3 Command Center for bounded, non-transferable semantic execution mandates and single-use intent tickets.
 
