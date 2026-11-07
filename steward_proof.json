@@ -1,0 +1,17 @@
+{
+  "checkType": "REPRODUCIBLE_SUBMIT_AND_FINALIZED_READBACK",
+  "verified": true,
+  "timestamp": "2026-11-07T07:14:03.347Z",
+  "contractAddress": "0x45d5b9fCEe51A8E58327E6C9eCa060bc7777559c",
+  "chainId": 61999,
+  "signer": "0x38409cca5f5ca70f3fe189638a87862318b478dd",
+  "transaction": {
+    "method": "register_mandate",
+    "txHash": "0xa6252fa34fae67c7f5eeed5dd5afda01678984c3aa198f7742ec902435cf1731",
+    "finalizedStatus": 7
+  },
+  "readback": {
+    "protocol_version": "IntentMandateGuard/v2.0",
+    "get_mandate": {}
+  }
+}
