@@ -3,6 +3,7 @@
 ## Milestone Checklist
 
 * **Intelligent Contract (`IntentMandateGuard.py`):** Completed & Steward-Approved.
+* **Deployed Contract (Studio):** `0x45d5b9fCEe51A8E58327E6C9eCa060bc7777559c`
 * **Protocol Version:** `IntentMandateGuard/v2.0`
 * **GenVM Dependency:** `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6`
 * **Unit & Dataset Tests (`test_intent_mandate_guard.py`):** 6/6 passing (`pytest`).
