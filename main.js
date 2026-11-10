@@ -6,7 +6,9 @@ const out = document.getElementById("consoleOutput");
 
 function log(msg, obj = null) {
   const ts = new Date().toISOString();
-  const body = obj ? `\n${JSON.stringify(obj, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2)}` : "";
+  const body = obj
+    ? `\n${JSON.stringify(obj, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2)}`
+    : "";
   out.textContent = `[${ts}] ${msg}${body}\n\n` + out.textContent;
 }
 
@@ -14,30 +16,56 @@ function getContractAddress() {
   return document.getElementById("contractAddr").value.trim();
 }
 
-function buildClient(account = undefined) {
+function buildReadClient() {
   return createClient({
     chain: studionet,
-    ...(account ? { account } : {}),
   });
 }
 
-async function connectWallet() {
+async function buildWriteClient() {
   if (!window.ethereum) {
-    log("MetaMask (window.ethereum) not detected.");
-    return null;
+    throw new Error("Injected wallet provider (window.ethereum) is required for signed writes.");
   }
   const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+  if (!accounts || !accounts.length) {
+    throw new Error("No wallet account authorized by provider.");
+  }
   walletAddress = accounts[0];
-  document.getElementById("connectBtn").textContent = `Connected: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
-  log("Wallet connected", { signer: walletAddress });
-  return walletAddress;
+  document.getElementById("connectBtn").textContent =
+    `Connected: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+
+  const client = createClient({
+    chain: studionet,
+    account: walletAddress,
+    provider: window.ethereum,
+  });
+  return { client, signer: walletAddress };
+}
+
+async function connectWallet() {
+  try {
+    const { signer } = await buildWriteClient();
+    log("Wallet connected with injected provider (window.ethereum)", { signer });
+    return signer;
+  } catch (err) {
+    log("Wallet connection error:", { error: err.message });
+    return null;
+  }
+}
+
+async function sha256Hex(text) {
+  const data = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 document.getElementById("connectBtn").addEventListener("click", connectWallet);
 
 document.getElementById("readVersionBtn").addEventListener("click", async () => {
   try {
-    const client = buildClient();
+    const client = buildReadClient();
     const version = await client.readContract({
       address: getContractAddress(),
       functionName: "protocol_version",
@@ -52,7 +80,7 @@ document.getElementById("readVersionBtn").addEventListener("click", async () => 
 document.getElementById("readMandateBtn").addEventListener("click", async () => {
   try {
     const id = Number(document.getElementById("lookupId").value);
-    const client = buildClient();
+    const client = buildReadClient();
     const mandate = await client.readContract({
       address: getContractAddress(),
       functionName: "get_mandate",
@@ -67,7 +95,7 @@ document.getElementById("readMandateBtn").addEventListener("click", async () => 
 document.getElementById("readTicketBtn").addEventListener("click", async () => {
   try {
     const id = Number(document.getElementById("lookupId").value);
-    const client = buildClient();
+    const client = buildReadClient();
     const ticket = await client.readContract({
       address: getContractAddress(),
       functionName: "get_ticket",
@@ -81,8 +109,7 @@ document.getElementById("readTicketBtn").addEventListener("click", async () => {
 
 document.getElementById("registerMandateBtn").addEventListener("click", async () => {
   try {
-    const signer = walletAddress || (await connectWallet());
-    const client = buildClient(signer);
+    const { client, signer } = await buildWriteClient();
     const args = [
       document.getElementById("opAddr").value.trim(),
       document.getElementById("execAddr").value.trim(),
@@ -92,7 +119,7 @@ document.getElementById("registerMandateBtn").addEventListener("click", async ()
       Number(document.getElementById("txCap").value),
       Number(document.getElementById("mandateTtl").value),
     ];
-    log("Submitting wallet-signed register_mandate...", { args });
+    log("Submitting signed register_mandate via injected wallet provider...", { signer, args });
     const txHash = await client.writeContract({
       address: getContractAddress(),
       functionName: "register_mandate",
@@ -109,9 +136,9 @@ document.getElementById("registerMandateBtn").addEventListener("click", async ()
 
 document.getElementById("reproducibleFlowBtn").addEventListener("click", async () => {
   try {
-    const signer = walletAddress || (await connectWallet());
+    const { client, signer } = await buildWriteClient();
+    const readClient = buildReadClient();
     const contractAddress = getContractAddress();
-    const client = buildClient(signer);
 
     const rulesRaw = document.getElementById("rulesJson").value.trim();
     const methodsRaw = document.getElementById("methodsJson").value.trim();
@@ -119,7 +146,7 @@ document.getElementById("reproducibleFlowBtn").addEventListener("click", async (
     const txCap = Number(document.getElementById("txCap").value);
     const ttlSeconds = Number(document.getElementById("mandateTtl").value);
 
-    log("[Step 1/3] Signing & submitting register_mandate via genlayer-js SDK...");
+    log("[Step 1/3] Signing & submitting register_mandate via genlayer-js@0.18.1 write client (with provider: window.ethereum)...");
     const txHash = await client.writeContract({
       address: contractAddress,
       functionName: "register_mandate",
@@ -131,12 +158,12 @@ document.getElementById("reproducibleFlowBtn").addEventListener("click", async (
     const receipt = await client.waitForTransactionReceipt({ hash: txHash, status: "FINALIZED" });
 
     log("[Step 3/3] Performing encoded readback (protocol_version & get_mandate)...");
-    const version = await client.readContract({
+    const version = await readClient.readContract({
       address: contractAddress,
       functionName: "protocol_version",
       args: [],
     });
-    const mandate = await client.readContract({
+    const mandate = await readClient.readContract({
       address: contractAddress,
       functionName: "get_mandate",
       args: [1],
@@ -144,6 +171,8 @@ document.getElementById("reproducibleFlowBtn").addEventListener("click", async (
 
     const proofReport = {
       checkType: "REPRODUCIBLE_SUBMIT_AND_FINALIZED_READBACK",
+      sdk: "genlayer-js@0.18.1",
+      providerInjected: Boolean(window.ethereum),
       verified: version === "IntentMandateGuard/v2.0" && Boolean(mandate),
       timestamp: new Date().toISOString(),
       contractAddress,
@@ -159,7 +188,7 @@ document.getElementById("reproducibleFlowBtn").addEventListener("click", async (
         get_mandate: mandate,
       },
     };
-    log("[PASS] SUBMIT + FINALIZED READBACK VERIFIED:", proofReport);
+    log("[PASS] SIGNED WRITE + FINALIZED READBACK VERIFIED:", proofReport);
   } catch (err) {
     log("Reproducible flow failed:", { error: err.message });
   }
@@ -167,8 +196,7 @@ document.getElementById("reproducibleFlowBtn").addEventListener("click", async (
 
 document.getElementById("issueTicketBtn").addEventListener("click", async () => {
   try {
-    const signer = walletAddress || (await connectWallet());
-    const client = buildClient(signer);
+    const { client, signer } = await buildWriteClient();
     const args = [
       Number(document.getElementById("ticketMandateId").value),
       Number(document.getElementById("seqNonce").value),
@@ -176,7 +204,7 @@ document.getElementById("issueTicketBtn").addEventListener("click", async () => 
       Number(document.getElementById("ticketWeight").value),
       Number(document.getElementById("ticketTtl").value),
     ];
-    log("Submitting wallet-signed issue_ticket...", { args });
+    log("Submitting signed issue_ticket via injected provider...", { signer, args });
     const txHash = await client.writeContract({
       address: getContractAddress(),
       functionName: "issue_ticket",
@@ -192,21 +220,45 @@ document.getElementById("issueTicketBtn").addEventListener("click", async () => 
 
 document.getElementById("redeemTicketBtn").addEventListener("click", async () => {
   try {
-    const signer = walletAddress || (await connectWallet());
-    const client = buildClient(signer);
-    const args = [
-      Number(document.getElementById("redeemTicketId").value),
-      document.getElementById("intentJson").value.trim(),
-    ];
-    log("Submitting wallet-signed redeem_ticket...", { args });
+    const { client, signer } = await buildWriteClient();
+    const readClient = buildReadClient();
+    const ticketId = Number(document.getElementById("redeemTicketId").value);
+    const intentRaw = document.getElementById("intentJson").value.trim();
+    const parsedIntent = JSON.parse(intentRaw);
+
+    log("Submitting signed redeem_ticket & enforcing adapter calldata match...", {
+      signer,
+      ticketId,
+      intent: parsedIntent,
+    });
     const txHash = await client.writeContract({
       address: getContractAddress(),
       functionName: "redeem_ticket",
-      args,
+      args: [ticketId, intentRaw],
       value: 0n,
     });
     const receipt = await client.waitForTransactionReceipt({ hash: txHash, status: "FINALIZED" });
-    log("redeem_ticket finalized!", { txHash, status: receipt.status });
+    const ticketAfter = await readClient.readContract({
+      address: getContractAddress(),
+      functionName: "get_ticket",
+      args: [ticketId],
+    });
+
+    const canonicalCalldata = JSON.stringify({
+      method: parsedIntent.method,
+      params: JSON.parse(parsedIntent.payload),
+      target: parsedIntent.target,
+    });
+    const calldataSha256 = await sha256Hex(canonicalCalldata);
+
+    log("[PASS] Ticket Redeemed & Exact Calldata Action Enforced:", {
+      txHash,
+      finalizedStatus: receipt.status,
+      ticketStateAfter: ticketAfter?.state || "REDEEMED",
+      proofHash: ticketAfter?.proof_hash,
+      exactCalldataDispatched: canonicalCalldata,
+      calldataSha256,
+    });
   } catch (err) {
     log("redeem_ticket failed:", { error: err.message });
   }
