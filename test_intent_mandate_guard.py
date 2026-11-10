@@ -53,7 +53,7 @@ def _install_genlayer_mock():
 
     class _Message:
         sender_address = Address("0x1111111111111111111111111111111111111111")
-        contract_address = Address("0x2222222222222222222222222222222222222222")
+        contract_address = Address("0x45d5b9fCEe51A8E58327E6C9eCa060bc7777559c")
         chain_id = 61999
 
     class _Contract:
@@ -97,6 +97,10 @@ from IntentMandateGuard import (  # noqa: E402
     IntentMandateGuard,
     normalize_assessments,
     parse_intent_payload,
+)
+from ExecutionAdapter import (  # noqa: E402
+    IntentExecutionAdapter,
+    build_canonical_calldata,
 )
 
 PRINCIPAL_ADDR = gl_mod.Address("0x1111111111111111111111111111111111111111")
@@ -292,3 +296,139 @@ def test_sample_dataset_json_scenarios():
             600,
         )
         assert contract.get_ticket(tid)["state"] == scenario["expected_state"]
+
+
+def test_end_to_end_adapter_issuance_redemption_and_effect_enforcement():
+    """End-to-end test covering mandate registration, ticket issuance, adapter redemption,
+    cryptographic proof verification, and exact external calldata/effect enforcement.
+    """
+    contract = IntentMandateGuard()
+    adapter = IntentExecutionAdapter(
+        guard_contract=contract,
+        chain_id=61999,
+        contract_address=str(gl_mod.gl.message.contract_address),
+    )
+
+    # 1. Principal registers mandate
+    gl_mod.gl.message.sender_address = PRINCIPAL_ADDR
+    mandate_id = contract.register_mandate(
+        OPERATOR_ADDR,
+        EXECUTOR_ADDR,
+        json.dumps(sample_rules()),
+        json.dumps(sample_methods()),
+        10000,
+        5,
+        3600,
+    )
+
+    # 2. Operator issues single-use ticket for a specific swap intent
+    gl_mod.gl.message.sender_address = OPERATOR_ADDR
+    gl_mod.gl.nondet._mock_response = {
+        "assessments": [
+            {"index": 0, "outcome": "PASS", "certainty": "solid"},
+            {"index": 1, "outcome": "PASS", "certainty": "solid"},
+        ]
+    }
+    intent = sample_intent()
+    ticket_id = contract.issue_ticket(mandate_id, 501, json.dumps(intent), 2500, 600)
+    assert contract.get_ticket(ticket_id)["state"] == "ACTIVE"
+
+    # Track external router calls executed by the adapter
+    dispatched_calls = []
+
+    def mock_router_dispatch(target, method, exact_calldata):
+        dispatched_calls.append((target, method, exact_calldata))
+        return {"router_status": "SWAP_EXECUTED", "calldata_executed": exact_calldata}
+
+    # 3. Designated executor runs the ExecutionAdapter to consume the ticket and trigger the swap
+    gl_mod.gl.message.sender_address = EXECUTOR_ADDR
+    effect_record = adapter.consume_and_execute(
+        ticket_id=ticket_id,
+        target=intent["target"],
+        method=intent["method"],
+        calldata_payload=intent["payload"],
+        action_handler=mock_router_dispatch,
+    )
+
+    # 4. Prove the redeemed payload is the exact calldata / external action performed
+    expected_calldata = build_canonical_calldata(
+        intent["target"], intent["method"], intent["payload"]
+    )
+    assert effect_record["proof_verified"] is True
+    assert effect_record["proof_hash"] == effect_record["recomputed_proof_hash"]
+    assert effect_record["exact_calldata"] == expected_calldata
+    assert effect_record["state_after"] == "REDEEMED"
+    assert len(dispatched_calls) == 1
+    assert dispatched_calls[0] == (intent["target"], intent["method"], expected_calldata)
+
+    # Verify mandate quota accounting transitioned from locked to used
+    final_mandate = contract.get_mandate(mandate_id)
+    assert final_mandate["locked_quota"] == 0
+    assert final_mandate["used_quota"] == 2500
+    assert final_mandate["used_txs"] == 1
+
+
+def test_adapter_rejects_tampered_calldata_or_replay():
+    """Proves that any modification to the external action payload or replay attempt is halted
+    before any external effect can be triggered.
+    """
+    contract = IntentMandateGuard()
+    adapter = IntentExecutionAdapter(
+        guard_contract=contract,
+        chain_id=61999,
+        contract_address=str(gl_mod.gl.message.contract_address),
+    )
+
+    gl_mod.gl.message.sender_address = PRINCIPAL_ADDR
+    mandate_id = contract.register_mandate(
+        OPERATOR_ADDR,
+        EXECUTOR_ADDR,
+        json.dumps(sample_rules()),
+        json.dumps(sample_methods()),
+        10000,
+        5,
+        3600,
+    )
+
+    gl_mod.gl.message.sender_address = OPERATOR_ADDR
+    gl_mod.gl.nondet._mock_response = {
+        "assessments": [
+            {"index": 0, "outcome": "PASS", "certainty": "solid"},
+            {"index": 1, "outcome": "PASS", "certainty": "solid"},
+        ]
+    }
+    intent = sample_intent()
+    ticket_id = contract.issue_ticket(mandate_id, 502, json.dumps(intent), 2500, 600)
+
+    gl_mod.gl.message.sender_address = EXECUTOR_ADDR
+    tampered_payload = '{"tokenIn":"USDC","tokenOut":"WETH","amount":9999,"maxSlippageBps":30}'
+
+    # Attempting to execute with tampered amount (9999 instead of committed 2500) must halt
+    with pytest.raises(gl_mod.gl.vm.UserError, match="does not match cryptographic anchor"):
+        adapter.consume_and_execute(
+            ticket_id=ticket_id,
+            target=intent["target"],
+            method=intent["method"],
+            calldata_payload=tampered_payload,
+        )
+
+    assert len(adapter.executed_actions) == 0
+    assert contract.get_ticket(ticket_id)["state"] == "ACTIVE"
+
+    # Valid execution succeeds once
+    adapter.consume_and_execute(
+        ticket_id=ticket_id,
+        target=intent["target"],
+        method=intent["method"],
+        calldata_payload=intent["payload"],
+    )
+    assert len(adapter.executed_actions) == 1
+
+    # Replay attempt on already-REDEEMED ticket must halt
+    with pytest.raises(gl_mod.gl.vm.UserError, match="not eligible for redemption"):
+        adapter.consume_and_execute(
+            ticket_id=ticket_id,
+            target=intent["target"],
+            method=intent["method"],
+            calldata_payload=intent["payload"],
+        )
