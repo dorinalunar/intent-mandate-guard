@@ -1,0 +1,20 @@
+{
+  "id": "intentmandateguard/v3/ticket-attestation",
+  "title": "IntentMandateGuard v3.0 Ticket & Execution Receipt Template",
+  "description": "Canonical intent payload and execution receipt format for IntentMandateGuard/v3.0.",
+  "required_fields": [
+    "method",
+    "target",
+    "payload"
+  ],
+  "example": {
+    "method": "exactInputSingle",
+    "target": "uniswap-v3-router.eth",
+    "payload": "{\"tokenIn\":\"USDC\",\"tokenOut\":\"WETH\",\"amount\":2500,\"maxSlippageBps\":25}"
+  },
+  "receipt_example": {
+    "ticket_id": 1,
+    "calldata_sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+    "external_tx_ref": "0x62048c591d8e3814b006bfbe813a9f0a69c2d6833943c56f881d8b814967886d"
+  }
+}
