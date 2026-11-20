@@ -1,6 +1,6 @@
 # IntentMandateGuard v3.0 Demo Flow
 
-Contract: `0xcB45206f7162BFc5427Df038F750B1F3705e0c5a` (GenLayer Studio Dev, chain `61997`)
+Contract: `0xACA0da3b7b6CC25d8B65040f325F98603beAD072` (GenLayer Studio Dev, chain `61997`)
 
 ```text
 1. register_mandate(

@@ -10,8 +10,8 @@
 
 <p align="center">
   <a href="https://dorinalunar.github.io/intent-mandate-guard/"><img src="https://img.shields.io/badge/Live_Console-GitHub_Pages-00bfa6?style=for-the-badge" alt="Live Console" /></a>
-  <a href="https://studio.genlayer.com/?import-contract=0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"><img src="https://img.shields.io/badge/GenLayer-Studio-6c5ce7?style=for-the-badge" alt="GenLayer Studio" /></a>
-  <a href="https://explorer-studio.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"><img src="https://img.shields.io/badge/Explorer-Contract-0984e3?style=for-the-badge" alt="Explorer" /></a>
+  <a href="https://studio-dev.genlayer.com/?import-contract=0xACA0da3b7b6CC25d8B65040f325F98603beAD072"><img src="https://img.shields.io/badge/GenLayer-Studio-6c5ce7?style=for-the-badge" alt="GenLayer Studio" /></a>
+  <a href="https://explorer-studio-dev.genlayer.com/address/0xACA0da3b7b6CC25d8B65040f325F98603beAD072"><img src="https://img.shields.io/badge/Explorer-Contract-0984e3?style=for-the-badge" alt="Explorer" /></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-2d3436?style=for-the-badge" alt="MIT License" /></a>
 </p>
 
@@ -23,8 +23,8 @@
 | :--- | :--- |
 | **Protocol Version** | `IntentMandateGuard/v3.0` |
 | **Network** | GenLayer Studio Dev (`chain 61997`) |
-| **Contract Address** | [`0xcB45206f7162BFc5427Df038F750B1F3705e0c5a`](https://explorer-studio.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) |
-| **GenLayer Studio** | [Import Contract in Studio](https://studio.genlayer.com/?import-contract=0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) |
+| **Contract Address** | [`0xACA0da3b7b6CC25d8B65040f325F98603beAD072`](https://explorer-studio-dev.genlayer.com/address/0xACA0da3b7b6CC25d8B65040f325F98603beAD072) |
+| **GenLayer Studio** | [Import Contract in Studio](https://studio-dev.genlayer.com/?import-contract=0xACA0da3b7b6CC25d8B65040f325F98603beAD072) |
 | **Live Web Console** | [dorinalunar.github.io/intent-mandate-guard](https://dorinalunar.github.io/intent-mandate-guard/) |
 | **Source File** | [`contracts/IntentMandateGuard.py`](contracts/IntentMandateGuard.py) |
 | **Source SHA-256** | `8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1` |
@@ -79,9 +79,9 @@ Autonomous agents and off-chain executors need bounded authority before interact
 
 | Step | Action | Sender | Status | Transaction |
 | :---: | :--- | :--- | :---: | :--- |
-| 1 | `Deploy` (`IntentMandateGuard/v3.0`) | `0x38409cca...18b478dd` | `FINALIZED` | [`0x6b88abc0...8a3853c`](https://explorer-studio.genlayer.com/tx/0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c) |
-| 2 | `register_mandate` | `0x38409cca...18b478dd` | `FINALIZED` | [`0x94151a08...52b5b28`](https://explorer-studio.genlayer.com/tx/0x94151a08f4a0bed67e2fd44ac44e26f9008fbad12aa14d51686d9364b52b5b28) |
-| 3 | `issue_ticket` | `0x38409cca...18b478dd` | `FINALIZED` | [`0x62048c59...967886d`](https://explorer-studio.genlayer.com/tx/0x62048c591d8e3814b006bfbe813a9f0a69c2d6833943c56f881d8b814967886d) |
+| 1 | `Deploy` (`IntentMandateGuard/v3.0`) | `0x38409cca...18b478dd` | `FINALIZED` | [`0x6b88abc0...8a3853c`](https://explorer-studio-dev.genlayer.com/tx/0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c) |
+| 2 | `register_mandate` | `0x38409cca...18b478dd` | `FINALIZED` | [`0x94151a08...52b5b28`](https://explorer-studio-dev.genlayer.com/tx/0x94151a08f4a0bed67e2fd44ac44e26f9008fbad12aa14d51686d9364b52b5b28) |
+| 3 | `issue_ticket` | `0x38409cca...18b478dd` | `FINALIZED` | [`0x62048c59...967886d`](https://explorer-studio-dev.genlayer.com/tx/0x62048c591d8e3814b006bfbe813a9f0a69c2d6833943c56f881d8b814967886d) |
 
 ---
 
@@ -104,7 +104,7 @@ Autonomous agents and off-chain executors need bounded authority before interact
 ### 3. Verify Deployed Bytecode / Source Hash
 
     curl -s -X POST https://studio-dev.genlayer.com/api -H 'content-type: application/json' \
-      -d '{"jsonrpc":"2.0","id":1,"method":"gen_getContractCode","params":["0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"]}' \
+      -d '{"jsonrpc":"2.0","id":1,"method":"gen_getContractCode","params":["0xACA0da3b7b6CC25d8B65040f325F98603beAD072"]}' \
       | python3 -c "import sys,json,base64,hashlib; print(hashlib.sha256(base64.b64decode(json.load(sys.stdin)['result'])).hexdigest())"
 
     shasum -a 256 contracts/IntentMandateGuard.py

@@ -4,7 +4,7 @@
 |---|---|
 | **Network** | GenLayer Studio Dev (`chain 61997`) |
 | **RPC** | `https://studio-dev.genlayer.com/api` |
-| **Active Contract (v3.0)** | [`0xcB45206f7162BFc5427Df038F750B1F3705e0c5a`](https://explorer-studio-dev.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) |
+| **Active Contract (v3.0)** | [`0xACA0da3b7b6CC25d8B65040f325F98603beAD072`](https://explorer-studio-dev.genlayer.com/address/0xACA0da3b7b6CC25d8B65040f325F98603beAD072) |
 | **Deploy Tx** | [`0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c`](https://explorer-studio-dev.genlayer.com/tx/0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c) |
 | **Creator / Principal** | `0x38409cca5f5ca70f3fe189638a87862318b478dd` |
 | **Deployed Timestamp** | `2026-11-19T23:34:13Z` |
@@ -24,7 +24,7 @@
 
 ```bash
 curl -s -X POST https://studio-dev.genlayer.com/api -H 'content-type: application/json' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"gen_getContractCode","params":["0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"]}' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"gen_getContractCode","params":["0xACA0da3b7b6CC25d8B65040f325F98603beAD072"]}' \
   | python3 -c "import sys,json,base64,hashlib; print(hashlib.sha256(base64.b64decode(json.load(sys.stdin)['result'])).hexdigest())"
 shasum -a 256 contracts/IntentMandateGuard.py
 # Expected SHA-256: 8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1

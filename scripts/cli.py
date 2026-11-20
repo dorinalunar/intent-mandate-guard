@@ -51,7 +51,7 @@ def main() -> None:
     else:
         intent_str = json.dumps(build_evidence.example_intent(), separators=(",", ":"))
         print(f"""# IntentMandateGuard v3.0 Studio Call Sheet
-Contract: 0xcB45206f7162BFc5427Df038F750B1F3705e0c5a
+Contract: 0xACA0da3b7b6CC25d8B65040f325F98603beAD072
 
 1) register_mandate(
      operator="0x38409cca5f5ca70f3fe189638a87862318b478dd",

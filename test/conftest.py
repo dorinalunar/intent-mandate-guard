@@ -98,7 +98,7 @@ def _install_fake_genlayer() -> None:
     gl.nondet = types.SimpleNamespace(exec_prompt=_exec_prompt)
     gl.message = types.SimpleNamespace(
         sender_address=Address("0x38409cca5f5ca70f3fe189638a87862318b478dd"),
-        contract_address=Address("0xcb45206f7162bfc5427df038f750b1f3705e0c5a"),
+        contract_address=Address("0xaca0da3b7b6cc25d8b65040f325f98603bead072"),
         chain_id=61997,
         timestamp=1_795_122_437,
     )
@@ -146,7 +146,7 @@ def reset(gl) -> None:
     gl.clock = 1_795_122_437
     gl.message.timestamp = gl.clock
     gl.message.sender_address = gl.Address("0x38409cca5f5ca70f3fe189638a87862318b478dd")
-    gl.message.contract_address = gl.Address("0xcb45206f7162bfc5427df038f750b1f3705e0c5a")
+    gl.message.contract_address = gl.Address("0xaca0da3b7b6cc25d8b65040f325f98603bead072")
     gl.message.chain_id = 61997
     gl.llm_reply = {
         "assessments": [

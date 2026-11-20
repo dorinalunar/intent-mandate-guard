@@ -9,7 +9,7 @@ import sys
 import urllib.request
 
 RPC = "https://studio-dev.genlayer.com/api"
-ADDRESS = "0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"
+ADDRESS = "0xACA0da3b7b6CC25d8B65040f325F98603beAD072"
 SOURCE = pathlib.Path(__file__).resolve().parents[1] / "contracts" / "IntentMandateGuard.py"
 
 

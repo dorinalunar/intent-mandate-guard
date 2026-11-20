@@ -21,7 +21,7 @@ def main() -> None:
     pack = {
         "name": "IntentMandateGuard v3.0 Integrity Pack",
         "protocol": "IntentMandateGuard/v3.0",
-        "contract_address": "0xcB45206f7162BFc5427Df038F750B1F3705e0c5a",
+        "contract_address": "0xACA0da3b7b6CC25d8B65040f325F98603beAD072",
         "deploy_tx": "0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "files": {

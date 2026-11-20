@@ -1,6 +1,6 @@
 # GenLayer Studio Dev Operator Guide
 
-* **Live Contract (`v3.0`):** [`0xcB45206f7162BFc5427Df038F750B1F3705e0c5a`](https://explorer-studio-dev.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a)
+* **Live Contract (`v3.0`):** [`0xACA0da3b7b6CC25d8B65040f325F98603beAD072`](https://explorer-studio-dev.genlayer.com/address/0xACA0da3b7b6CC25d8B65040f325F98603beAD072)
 * **Studio URL:** https://studio-dev.genlayer.com/run-debug
 
 ## Quick Run Checklist

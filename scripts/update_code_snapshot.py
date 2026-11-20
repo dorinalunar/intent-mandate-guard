@@ -46,7 +46,7 @@ def build_snapshot(commit: str | None = None) -> dict:
         "contract_hash": contract_hash,
         "contract_hash_algo": "sha256(contracts/IntentMandateGuard.py)",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "note": "IntentMandateGuard v3.0 deployment snapshot (0xcB45206f7162BFc5427Df038F750B1F3705e0c5a)",
+        "note": "IntentMandateGuard v3.0 deployment snapshot (0xACA0da3b7b6CC25d8B65040f325F98603beAD072)",
     }
 
 

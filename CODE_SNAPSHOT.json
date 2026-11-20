@@ -5,5 +5,5 @@
   "contract_hash": "8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1",
   "contract_hash_algo": "sha256(contracts/IntentMandateGuard.py)",
   "timestamp": "2026-11-19T23:34:13Z",
-  "note": "IntentMandateGuard v3.0 deployment snapshot (0xcB45206f7162BFc5427Df038F750B1F3705e0c5a)"
+  "note": "IntentMandateGuard v3.0 deployment snapshot (0xACA0da3b7b6CC25d8B65040f325F98603beAD072)"
 }
