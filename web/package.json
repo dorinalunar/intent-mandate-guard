@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "genlayer-js": "^0.28.0",
+    "genlayer-js": "2.0.0-rc.1",
     "next": "14.2.25",
     "react": "18.3.1",
     "react-dom": "18.3.1"

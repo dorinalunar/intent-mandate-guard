@@ -1,4 +1,5 @@
-import { readContract, writeContract, type Address } from "./genlayer";
+import type { CalldataEncodable } from "genlayer-js/types";
+import { parseJson, readContract, writeAndWait, type Address } from "./genlayer";
 
 export type ProtocolStats = Record<string, unknown>;
 export type MandateRow = Record<string, any>;
@@ -8,10 +9,9 @@ export type ExecutionReceipt = Record<string, any>;
 
 export async function getProtocolVersion(): Promise<string> {
   try {
-    const res = await readContract<string>("protocol_version");
+    const res = await readContract<string>("protocol_version", []);
     if (typeof res === "string" && res) return res;
-    const legacy = await readContract<string>("get_protocol_version");
-    return legacy || "IntentMandateGuard/v3.0";
+    return "IntentMandateGuard/v3.0";
   } catch {
     return "IntentMandateGuard/v3.0";
   }
@@ -19,7 +19,9 @@ export async function getProtocolVersion(): Promise<string> {
 
 export async function getStats(): Promise<ProtocolStats> {
   try {
-    return await readContract<ProtocolStats>("get_stats");
+    const raw = await readContract<string | ProtocolStats>("get_stats", []);
+    if (typeof raw === "string") return parseJson<ProtocolStats>(raw, { protocol: "IntentMandateGuard/v3.0", status: "connected" });
+    return raw ?? { protocol: "IntentMandateGuard/v3.0", status: "connected" };
   } catch {
     return { protocol: "IntentMandateGuard/v3.0", status: "connected" };
   }
@@ -27,9 +29,13 @@ export async function getStats(): Promise<ProtocolStats> {
 
 export async function listMandates(offset = 0, limit = 20): Promise<{ items: MandateRow[] }> {
   try {
-    const res = await readContract<{ items?: MandateRow[] } | MandateRow[]>("list_mandates", [offset, limit]);
-    if (Array.isArray(res)) return { items: res };
-    return { items: res?.items ?? [] };
+    const raw = await readContract<string | { items?: MandateRow[] } | MandateRow[]>(
+      "list_mandates",
+      [offset, limit],
+    );
+    const parsed = typeof raw === "string" ? parseJson<{ items?: MandateRow[] } | MandateRow[]>(raw, { items: [] }) : raw;
+    if (Array.isArray(parsed)) return { items: parsed };
+    return { items: parsed?.items ?? [] };
   } catch {
     return { items: [] };
   }
@@ -37,90 +43,114 @@ export async function listMandates(offset = 0, limit = 20): Promise<{ items: Man
 
 export async function listTickets(offset = 0, limit = 20): Promise<{ items: TicketRow[] }> {
   try {
-    const res = await readContract<{ items?: TicketRow[] } | TicketRow[]>("list_tickets", [offset, limit]);
-    if (Array.isArray(res)) return { items: res };
-    return { items: res?.items ?? [] };
+    const raw = await readContract<string | { items?: TicketRow[] } | TicketRow[]>(
+      "list_tickets",
+      [offset, limit],
+    );
+    const parsed = typeof raw === "string" ? parseJson<{ items?: TicketRow[] } | TicketRow[]>(raw, { items: [] }) : raw;
+    if (Array.isArray(parsed)) return { items: parsed };
+    return { items: parsed?.items ?? [] };
   } catch {
     return { items: [] };
   }
 }
 
 export async function getTicketSchedule(ticketId: number): Promise<TicketSchedule> {
-  return readContract<TicketSchedule>("get_ticket_schedule", [ticketId]);
+  const raw = await readContract<string | TicketSchedule>("get_ticket_schedule", [ticketId]);
+  return typeof raw === "string" ? parseJson<TicketSchedule>(raw, {}) : (raw ?? {});
 }
 
 export async function getExecutionReceipt(ticketId: number): Promise<ExecutionReceipt> {
-  return readContract<ExecutionReceipt>("get_execution_receipt", [ticketId]);
+  const raw = await readContract<string | ExecutionReceipt>("get_execution_receipt", [ticketId]);
+  return typeof raw === "string" ? parseJson<ExecutionReceipt>(raw, {}) : (raw ?? {});
 }
 
-function isProviderLike(val: unknown): boolean {
-  if (!val || typeof val !== "object") return false;
-  const obj = val as Record<string, unknown>;
-  return typeof obj.request === "function" || "_readableState" in obj || "pipes" in obj;
+export async function registerMandate(
+  account: Address,
+  provider: unknown,
+  operatorAddr: string,
+  executorAddr: string,
+  rulesJson: string,
+  methodsJson: string,
+  quotaCap: number,
+  txCap: number,
+  mandateTtl: number,
+): Promise<string> {
+  return writeAndWait(account, provider, "register_mandate", [
+    operatorAddr,
+    executorAddr,
+    rulesJson,
+    methodsJson,
+    quotaCap,
+    txCap,
+    mandateTtl,
+  ] as CalldataEncodable[]);
 }
 
-function sanitizeValue(val: unknown, seen = new WeakSet<object>()): unknown {
-  if (val === null || val === undefined) return val;
-  if (typeof val === "bigint") return val.toString();
-  if (typeof val !== "object") return val;
-  if (isProviderLike(val)) return undefined;
-  if (seen.has(val as object)) return undefined;
-  seen.add(val as object);
-
-  if (Array.isArray(val)) {
-    return val.map((item) => sanitizeValue(item, seen)).filter((item) => item !== undefined);
-  }
-
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
-    if (k.startsWith("_") || k === "pipes" || typeof v === "function") continue;
-    const clean = sanitizeValue(v, seen);
-    if (clean !== undefined) out[k] = clean;
-  }
-  return out;
+export async function issueTicket(
+  account: Address,
+  provider: unknown,
+  mandateId: number,
+  seqNonce: number,
+  intentJson: string,
+  weight: number,
+  ticketTtl: number,
+): Promise<string> {
+  return writeAndWait(account, provider, "issue_ticket", [
+    mandateId,
+    seqNonce,
+    intentJson,
+    weight,
+    ticketTtl,
+  ] as CalldataEncodable[]);
 }
 
-function extractCall(args: unknown[]): { from: Address; rest: unknown[] } {
-  const filtered = args.filter((a) => !isProviderLike(a));
-  const [from, ...rest] = filtered;
-  const cleanRest = (sanitizeValue(rest) as unknown[]) ?? [];
-  return {
-    from: String(from || "") as Address,
-    rest: cleanRest,
-  };
+export async function redeemTicket(
+  account: Address,
+  provider: unknown,
+  ticketId: number,
+  intentJson: string,
+): Promise<string> {
+  return writeAndWait(account, provider, "redeem_ticket", [
+    ticketId,
+    intentJson,
+  ] as CalldataEncodable[]);
 }
 
-export async function registerMandate(...args: unknown[]): Promise<string> {
-  const { from, rest } = extractCall(args);
-  return writeContract(from, "register_mandate", rest);
+export async function recordExecutionReceipt(
+  account: Address,
+  provider: unknown,
+  ticketId: number,
+  calldataSha256: string,
+  externalTxRef: string,
+): Promise<string> {
+  return writeAndWait(account, provider, "record_execution_receipt", [
+    ticketId,
+    calldataSha256,
+    externalTxRef,
+  ] as CalldataEncodable[]);
 }
 
-export async function issueTicket(...args: unknown[]): Promise<string> {
-  const { from, rest } = extractCall(args);
-  return writeContract(from, "issue_ticket", rest);
+export async function cancelReservation(
+  account: Address,
+  provider: unknown,
+  ticketId: number,
+): Promise<string> {
+  return writeAndWait(account, provider, "cancel_reservation", [ticketId] as CalldataEncodable[]);
 }
 
-export async function redeemTicket(...args: unknown[]): Promise<string> {
-  const { from, rest } = extractCall(args);
-  return writeContract(from, "redeem_ticket", rest);
+export async function sweepExpiredTicket(
+  account: Address,
+  provider: unknown,
+  ticketId: number,
+): Promise<string> {
+  return writeAndWait(account, provider, "sweep_expired_ticket", [ticketId] as CalldataEncodable[]);
 }
 
-export async function recordExecutionReceipt(...args: unknown[]): Promise<string> {
-  const { from, rest } = extractCall(args);
-  return writeContract(from, "record_execution_receipt", rest);
-}
-
-export async function sweepExpiredTicket(...args: unknown[]): Promise<string> {
-  const { from, rest } = extractCall(args);
-  return writeContract(from, "sweep_expired_ticket", rest);
-}
-
-export async function cancelReservation(...args: unknown[]): Promise<string> {
-  const { from, rest } = extractCall(args);
-  return writeContract(from, "cancel_reservation", rest);
-}
-
-export async function terminateMandate(...args: unknown[]): Promise<string> {
-  const { from, rest } = extractCall(args);
-  return writeContract(from, "terminate_mandate", rest);
+export async function terminateMandate(
+  account: Address,
+  provider: unknown,
+  mandateId: number,
+): Promise<string> {
+  return writeAndWait(account, provider, "terminate_mandate", [mandateId] as CalldataEncodable[]);
 }
