@@ -3,17 +3,17 @@
   "protocol": "IntentMandateGuard/v3.0",
   "contract_address": "0xACA0da3b7b6CC25d8B65040f325F98603beAD072",
   "deploy_tx": "0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c",
-  "generated_at": "2026-11-19T23:07:36Z",
+  "generated_at": "2026-11-20T20:23:35Z",
   "files": {
     "CODE_SNAPSHOT.json": {
-      "sha256": "090c23dce04e9db3093aef57c896b90cb1aa918d594db6f13e2d17f855376cf9",
+      "sha256": "0e277ca366c9a49547b64ef21aa4dec864a7fa399f619003610544ef5e05d10e",
       "content": {
-        "commit": "7275ced86e5bf37756c1701b677a689cd9bd6b47",
-        "evidence_hash": "98387f387032066c115f9671be4c9d82329bdd3b31a116b18c4b7fc1e34f8579",
+        "commit": "79aa4bed79db747a1c40f369d6794563e8624780",
+        "evidence_hash": "7b4ea46c99994d336011b5cd64e1d23e5dc6aa7850c33570131e2d5996ca6f18",
         "evidence_hash_algo": "sha256(git_rev_parse_HEAD)",
-        "contract_hash": "8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1",
+        "contract_hash": "a464b7bc5364888aecc5727bf733a86c3d16169e64d4ecc5219033d53d6928de",
         "contract_hash_algo": "sha256(contracts/IntentMandateGuard.py)",
-        "timestamp": "2026-11-19T23:34:13Z",
+        "timestamp": "2026-11-20T20:23:35Z",
         "note": "IntentMandateGuard v3.0 deployment snapshot (0xACA0da3b7b6CC25d8B65040f325F98603beAD072)"
       }
     },
@@ -27,7 +27,7 @@
       "sha256": "c81ab5fceb2843f6df728fcae15130ff3f15fde1edaf39d073b4a12235953ae3"
     },
     "contracts/IntentMandateGuard.py": {
-      "sha256": "8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1"
+      "sha256": "a464b7bc5364888aecc5727bf733a86c3d16169e64d4ecc5219033d53d6928de"
     }
   },
   "checks": [
