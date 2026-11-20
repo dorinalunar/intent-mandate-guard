@@ -51,37 +51,46 @@ export async function getExecutionReceipt(ticketId: number): Promise<ExecutionRe
   return readContract<ExecutionReceipt>("get_execution_receipt", [ticketId]);
 }
 
-export async function registerMandate(...args: any[]): Promise<string> {
+function extractCall(args: any[]): { from: Address; rest: unknown[] } {
+  if (args.length > 1 && typeof args[0] === "object" && args[0] !== null && typeof args[1] === "string") {
+    const [, from, ...rest] = args;
+    return { from: from as Address, rest };
+  }
   const [from, ...rest] = args;
-  return writeContract(from as Address, "register_mandate", rest);
+  return { from: from as Address, rest };
+}
+
+export async function registerMandate(...args: any[]): Promise<string> {
+  const { from, rest } = extractCall(args);
+  return writeContract(from, "register_mandate", rest);
 }
 
 export async function issueTicket(...args: any[]): Promise<string> {
-  const [from, ...rest] = args;
-  return writeContract(from as Address, "issue_ticket", rest);
+  const { from, rest } = extractCall(args);
+  return writeContract(from, "issue_ticket", rest);
 }
 
 export async function redeemTicket(...args: any[]): Promise<string> {
-  const [from, ...rest] = args;
-  return writeContract(from as Address, "redeem_ticket", rest);
+  const { from, rest } = extractCall(args);
+  return writeContract(from, "redeem_ticket", rest);
 }
 
 export async function recordExecutionReceipt(...args: any[]): Promise<string> {
-  const [from, ...rest] = args;
-  return writeContract(from as Address, "record_execution_receipt", rest);
+  const { from, rest } = extractCall(args);
+  return writeContract(from, "record_execution_receipt", rest);
 }
 
 export async function sweepExpiredTicket(...args: any[]): Promise<string> {
-  const [from, ...rest] = args;
-  return writeContract(from as Address, "sweep_expired_ticket", rest);
+  const { from, rest } = extractCall(args);
+  return writeContract(from, "sweep_expired_ticket", rest);
 }
 
 export async function cancelReservation(...args: any[]): Promise<string> {
-  const [from, ...rest] = args;
-  return writeContract(from as Address, "cancel_reservation", rest);
+  const { from, rest } = extractCall(args);
+  return writeContract(from, "cancel_reservation", rest);
 }
 
 export async function terminateMandate(...args: any[]): Promise<string> {
-  const [from, ...rest] = args;
-  return writeContract(from as Address, "terminate_mandate", rest);
+  const { from, rest } = extractCall(args);
+  return writeContract(from, "terminate_mandate", rest);
 }
