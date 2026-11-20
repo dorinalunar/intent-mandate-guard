@@ -1,56 +1,48 @@
-<p align="center">
-  <img src="./brand/logo.svg" alt="IntentMandateGuard Logo" width="480">
-</p>
+# IntentMandateGuard v3.0
 
+**Bounded, non-transferable semantic execution mandates, single-use intent tickets, verbatim-grounded AI audits, deadline-split settlement, and on-chain execution receipts on GenLayer.**
 
-# IntentMandateGuard - Bounded Semantic Execution Mandates on GenLayer
-
-**IntentMandateGuard** (`IntentMandateGuard/v2.0`) is a non-custodial GenLayer Intelligent Contract and Web3 Command Center for bounded, non-transferable semantic execution mandates and single-use intent tickets.
-
-No native assets are custodied inside the contract. Downstream execution adapters verify and redeem the exact cryptographically committed intent payload after transaction finality before triggering external effects.
-
----
-
-## Key Capabilities
-
-1. **Three-Role Separation (`principal`, `operator`, `executor`):**
-   * **Principal:** Registers the mandate (`register_mandate`), defines 1–6 natural-language semantic constraints, sets the method allowlist (1–8 methods), configures `quota_cap`, `tx_cap`, and `ttl_seconds`, and can unilaterally halt the mandate (`terminate_mandate`).
-   * **Operator:** Submits candidate structured intents (`method`, `target`, `payload`) to `issue_ticket` with a monotonic `seq_nonce` and quota `weight`.
-   * **Executor:** Redeems `ACTIVE` tickets (`redeem_ticket`) by presenting the exact committed `intent_json`, converting locked quota into consumed quota.
-2. **Fail-Closed GenVM AI Consensus (`INTENT_MANDATE_GUARD_V2`):**
-   * Evaluates every mandate rule independently via `gl.nondet.exec_prompt` inside `gl.vm.run_nondet_unsafe`.
-   * Treats `target` and `payload` strictly as passive untrusted data to neutralize embedded prompt injections.
-   * Requires unanimous `outcome == "PASS"` and `certainty == "solid"` across **every** rule. Any `FAIL`, `AMBIGUOUS`, or lower certainty tier marks the ticket `DENIED` without locking quota.
-3. **Two-Phase Quota Reservation & SHA-256 Proof Anchors:**
-   * Approved tickets lock `weight` in `locked_quota` and increment `locked_txs`.
-   * Each ticket commits `protocol`, `chain_id`, `contract`, `mandate_id`, `seq_nonce`, `executor`, `weight`, and `intent` into a canonical SHA-256 `proof_hash`.
-   * Unredeemed reservations can be released via `cancel_reservation`.
+| | |
+|---|---|
+| **Protocol Version** | `IntentMandateGuard/v3.0` |
+| **Contract (Studio Dev, chain 61997)** | [`0xcB45206f7162BFc5427Df038F750B1F3705e0c5a`](https://explorer-studio-dev.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) · [Deploy Record](STUDIO_DEV_DEPLOY.md) |
+| **Deploy Tx** | [`0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c`](https://explorer-studio-dev.genlayer.com/tx/0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c) |
+| **Milestone Hardening** | [`docs/MILESTONE_V3_HARDENING.md`](docs/MILESTONE_V3_HARDENING.md) |
+| **Studio Dev Run** | https://studio-dev.genlayer.com/run-debug |
+| **License** | [MIT](LICENSE.md) |
 
 ---
 
-## Repository Layout
+## Overview
 
-* `IntentMandateGuard.py` — GenLayer Intelligent Contract (`IntentMandateGuard/v2.0`).
-* `test_intent_mandate_guard.py` — Deterministic `pytest` suite with local GenVM mock.
-* `sample_dataset.json` — Reference DeFi swap and bridge mandate scenarios.
-* `index.html` & `main.js` — Browser Command Center using encoded `genlayer-js` SDK calls.
-* `STATUS.md` — Verification status, invariant checklist, and deployment readiness report.
-* `brand/` — Brand identity (`BRAND.md`), UI copy (`COPY.md`), launch playbook (`LAUNCH.md`), and naming taxonomy (`NAMES.md`).
-* `.github/workflows/` — Automated `ci.yml` (`pytest`) and `pages.yml` (GitHub Pages deployment).
+`IntentMandateGuard` enforces semantic policy boundaries before an off-chain or downstream executor can act on an intent:
+
+1. **Register Mandate (`register_mandate`)**: A principal defines natural-language semantic rules (1–6 rules), an allowlist of methods, `quota_cap`, `tx_cap`, `ttl_seconds`, and authorized `operator` and `executor` addresses.
+2. **Issue Single-Use Ticket (`issue_ticket`)**: The operator submits a canonical JSON intent (`method`, `target`, `payload`) with a unique `seq_nonce` and `weight`. GenLayer validators evaluate every rule independently and verify that every `PASS` is backed by `solid` certainty and a **verbatim quote grounded in the intent or rules**.
+3. **Redeem Ticket (`redeem_ticket`)**: Before `expires_at`, only the designated `executor` can redeem an `ACTIVE` ticket by presenting the exact committed intent payload matching the cryptographic anchor (`proof_hash`).
+4. **Record Execution Receipt (`record_execution_receipt`)**: After redemption, the executor or operator anchors the downstream `calldata_sha256` and `external_tx_ref` on-chain.
+5. **Deadline-Split Cleanup (`sweep_expired_ticket`)**: Once `expires_at` passes (or the principal calls `terminate_mandate`), anyone can permissionlessly sweep expired `ACTIVE` tickets to unlock reserved quota.
 
 ---
 
-## Quickstart & Local Verification
+## Quickstart
 
-Install dependencies and run the unit test suite:
+### 1. Run the 60-Test Suite
 
 ```bash
-pip install -r requirements.txt
-pytest test_intent_mandate_guard.py -v
+python3 -m pip install -r requirements-dev.txt
+python3 scripts/update_code_snapshot.py verify
+python3 scripts/validate_schemas.py
+python3 -m pytest -v
 ```
 
----
+### 2. Run the Web Console Locally
 
-## License
+```bash
+cd web
+npm install
+npm run dev
+# Open http://localhost:3010/console/
+```
 
-Released under the MIT License.
+The console connects directly to [`0xcB45206f7162BFc5427Df038F750B1F3705e0c5a`](https://explorer-studio-dev.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) on GenLayer Studio Dev (`chain 61997`).
