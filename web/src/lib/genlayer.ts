@@ -1,16 +1,38 @@
-import { CONTRACT_ADDRESS, RPC_URL } from "./config";
+import { CHAIN_ID, CONTRACT_ADDRESS, RPC_URL } from "./config";
 
 export type Address = `0x${string}`;
+
+function safeJsonStringify(value: unknown): string {
+  const seen = new WeakSet<object>();
+  return JSON.stringify(value, (_key, val) => {
+    if (typeof val === "bigint") return val.toString();
+    if (val && typeof val === "object") {
+      const rec = val as Record<string, unknown>;
+      if (typeof rec.request === "function" || "_readableState" in rec || "pipes" in rec) {
+        return undefined;
+      }
+      if (seen.has(val)) return undefined;
+      seen.add(val);
+    }
+    return val;
+  });
+}
 
 async function rpcCall<T = unknown>(method: string, params: unknown[]): Promise<T> {
   const res = await fetch(RPC_URL, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: Date.now(), method, params }),
+    body: safeJsonStringify({ jsonrpc: "2.0", id: Date.now(), method, params }),
   });
-  const json = await res.json();
+  const text = await res.text();
+  let json: { result?: T; error?: { message?: string } };
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(text || `RPC HTTP ${res.status}`);
+  }
   if (json.error) {
-    throw new Error(json.error.message || JSON.stringify(json.error));
+    throw new Error(json.error.message || safeJsonStringify(json.error));
   }
   return json.result as T;
 }
@@ -44,17 +66,37 @@ export async function writeContract(
   method: string,
   args: unknown[] = [],
 ): Promise<string> {
-  const eth = (window as unknown as { ethereum?: { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
+  const eth = (
+    window as unknown as {
+      ethereum?: { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> };
+    }
+  ).ethereum;
   if (!eth) throw new Error("MetaMask not found");
-  const hash = await eth.request({
-    method: "eth_sendTransaction",
-    params: [
+
+  const payload = {
+    from,
+    to: CONTRACT_ADDRESS,
+    chainId: `0x${CHAIN_ID.toString(16)}`,
+    data: safeJsonStringify({ method, args }),
+  };
+
+  try {
+    const txHash = await rpcCall<string>("gen_sendTransaction", [
       {
         from,
         to: CONTRACT_ADDRESS,
-        data: JSON.stringify({ method, args }),
+        method,
+        args,
       },
-    ],
+    ]);
+    if (typeof txHash === "string" && txHash) return txHash;
+  } catch {
+    // Fallback to wallet provider when direct studio RPC requires wallet signing
+  }
+
+  const hash = await eth.request({
+    method: "eth_sendTransaction",
+    params: [JSON.parse(safeJsonStringify(payload))],
   });
   return String(hash || "");
 }

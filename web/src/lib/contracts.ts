@@ -51,46 +51,74 @@ export async function getExecutionReceipt(ticketId: number): Promise<ExecutionRe
   return readContract<ExecutionReceipt>("get_execution_receipt", [ticketId]);
 }
 
-function extractCall(args: any[]): { from: Address; rest: unknown[] } {
-  if (args.length > 1 && typeof args[0] === "object" && args[0] !== null && typeof args[1] === "string") {
-    const [, from, ...rest] = args;
-    return { from: from as Address, rest };
-  }
-  const [from, ...rest] = args;
-  return { from: from as Address, rest };
+function isProviderLike(val: unknown): boolean {
+  if (!val || typeof val !== "object") return false;
+  const obj = val as Record<string, unknown>;
+  return typeof obj.request === "function" || "_readableState" in obj || "pipes" in obj;
 }
 
-export async function registerMandate(...args: any[]): Promise<string> {
+function sanitizeValue(val: unknown, seen = new WeakSet<object>()): unknown {
+  if (val === null || val === undefined) return val;
+  if (typeof val === "bigint") return val.toString();
+  if (typeof val !== "object") return val;
+  if (isProviderLike(val)) return undefined;
+  if (seen.has(val as object)) return undefined;
+  seen.add(val as object);
+
+  if (Array.isArray(val)) {
+    return val.map((item) => sanitizeValue(item, seen)).filter((item) => item !== undefined);
+  }
+
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+    if (k.startsWith("_") || k === "pipes" || typeof v === "function") continue;
+    const clean = sanitizeValue(v, seen);
+    if (clean !== undefined) out[k] = clean;
+  }
+  return out;
+}
+
+function extractCall(args: unknown[]): { from: Address; rest: unknown[] } {
+  const filtered = args.filter((a) => !isProviderLike(a));
+  const [from, ...rest] = filtered;
+  const cleanRest = (sanitizeValue(rest) as unknown[]) ?? [];
+  return {
+    from: String(from || "") as Address,
+    rest: cleanRest,
+  };
+}
+
+export async function registerMandate(...args: unknown[]): Promise<string> {
   const { from, rest } = extractCall(args);
   return writeContract(from, "register_mandate", rest);
 }
 
-export async function issueTicket(...args: any[]): Promise<string> {
+export async function issueTicket(...args: unknown[]): Promise<string> {
   const { from, rest } = extractCall(args);
   return writeContract(from, "issue_ticket", rest);
 }
 
-export async function redeemTicket(...args: any[]): Promise<string> {
+export async function redeemTicket(...args: unknown[]): Promise<string> {
   const { from, rest } = extractCall(args);
   return writeContract(from, "redeem_ticket", rest);
 }
 
-export async function recordExecutionReceipt(...args: any[]): Promise<string> {
+export async function recordExecutionReceipt(...args: unknown[]): Promise<string> {
   const { from, rest } = extractCall(args);
   return writeContract(from, "record_execution_receipt", rest);
 }
 
-export async function sweepExpiredTicket(...args: any[]): Promise<string> {
+export async function sweepExpiredTicket(...args: unknown[]): Promise<string> {
   const { from, rest } = extractCall(args);
   return writeContract(from, "sweep_expired_ticket", rest);
 }
 
-export async function cancelReservation(...args: any[]): Promise<string> {
+export async function cancelReservation(...args: unknown[]): Promise<string> {
   const { from, rest } = extractCall(args);
   return writeContract(from, "cancel_reservation", rest);
 }
 
-export async function terminateMandate(...args: any[]): Promise<string> {
+export async function terminateMandate(...args: unknown[]): Promise<string> {
   const { from, rest } = extractCall(args);
   return writeContract(from, "terminate_mandate", rest);
 }
