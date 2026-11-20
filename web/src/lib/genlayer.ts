@@ -43,11 +43,13 @@ export function formatError(err: unknown): string {
 
 let consensusInitialized = false;
 
-function getClient() {
+function getClient(from?: Address) {
   const eth =
     typeof window !== "undefined"
       ? (window as unknown as { ethereum?: unknown }).ethereum
       : undefined;
+
+  const rpcAccount = from ? ({ address: from, type: "json-rpc" } as never) : undefined;
 
   return createClient({
     chain: {
@@ -58,6 +60,7 @@ function getClient() {
       },
     },
     endpoint: RPC_URL,
+    ...(rpcAccount ? { account: rpcAccount } : {}),
     ...(eth ? { provider: eth as never } : {}),
   });
 }
@@ -132,13 +135,13 @@ export async function writeContract(
     throw new Error("Wallet address is missing. Reconnect MetaMask.");
   }
   try {
-    const client = getClient();
+    const client = getClient(from);
     if (!consensusInitialized) {
       await client.initializeConsensusSmartContract();
       consensusInitialized = true;
     }
     const txHash = await client.writeContract({
-      account: from,
+      account: { address: from, type: "json-rpc" } as never,
       address: CONTRACT_ADDRESS as Address,
       functionName: method,
       args: toCalldataArgs(args),
