@@ -48,7 +48,7 @@ export async function fundWithTestGen(address: Address, gen = 100): Promise<void
 export async function getNativeBalance(address: Address): Promise<string> {
   try {
     const wei = BigInt(await rpc<string>("eth_getBalance", [address, "latest"]));
-    return (wei / 1000000000000000000n).toString();
+    return (wei / BigInt("1000000000000000000")).toString();
   } catch {
     return "0";
   }
