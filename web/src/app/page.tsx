@@ -143,7 +143,7 @@ export default function HomePage() {
       <footer className="wrap footer">
         <div>IntentMandateGuard/v3.0 · GenLayer Studio Dev (61997)</div>
         <div>
-          <a href={withBase("/submit/")}>Submit kit</a> · MIT License · © 2026 Andrii Yefymenko
+          <a href={withBase("/submit/")}>Submit kit</a> · MIT License · © 2026 Andrii Efimenko
         </div>
       </footer>
     </>

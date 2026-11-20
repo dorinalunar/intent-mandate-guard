@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Andrii Yefymenko (@efimenkoand / dorinalunar)
+Copyright (c) 2026 Andrii Efimenko
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

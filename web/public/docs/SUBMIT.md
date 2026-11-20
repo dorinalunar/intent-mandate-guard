@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | **Project** | `IntentMandateGuard` (`v3.0`) |
-| **Author** | Andrii Yefymenko (`@efimenkoand` / GitHub `dorinalunar`) |
+| **Author** | Andrii Efimenko (`@efimenkoand` / GitHub `dorinalunar`) |
 | **Contract Address** | `0xcB45206f7162BFc5427Df038F750B1F3705e0c5a` |
 | **Explorer URL** | https://explorer-studio-dev.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a |
 | **Deploy Tx** | https://explorer-studio-dev.genlayer.com/tx/0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c |
