@@ -1,4 +1,5 @@
 import { createClient } from "genlayer-js";
+import type { CalldataEncodable } from "genlayer-js/types";
 import { CONTRACT_ADDRESS, RPC_URL } from "./config";
 
 export type Address = `0x${string}`;
@@ -47,6 +48,10 @@ function getClient(account?: Address) {
   });
 }
 
+function toCalldataArgs(args: unknown[]): CalldataEncodable[] {
+  return args as unknown as CalldataEncodable[];
+}
+
 async function rpcCall<T = unknown>(method: string, params: unknown[]): Promise<T> {
   const res = await fetch(RPC_URL, {
     method: "POST",
@@ -91,7 +96,7 @@ export async function readContract<T = unknown>(method: string, args: unknown[] 
     const res = await client.readContract({
       address: CONTRACT_ADDRESS as Address,
       functionName: method,
-      args,
+      args: toCalldataArgs(args),
     });
     return res as T;
   } catch {
@@ -114,7 +119,7 @@ export async function writeContract(
     const txHash = await client.writeContract({
       address: CONTRACT_ADDRESS as Address,
       functionName: method,
-      args,
+      args: toCalldataArgs(args),
       value: BigInt(0),
     });
     return String(txHash || "");
