@@ -48,177 +48,21 @@ Autonomous agents and off-chain executors need bounded authority before interact
 
 ## Protocol Lifecycle
 
-```text
-[Principal]                               [Operator]                                [Executor]
-     |                                         |                                         |
-     |-- 1. register_mandate() --------------->|                                         |
-     |   (rules, methods, quota_cap, ttl)      |                                         |
-     |                                         |-- 2. issue_ticket() ------------------->|
-     |                                         |   (canonical intent + LLM audit)        |
-     |                                         |   [Validators verify verbatim quotes]   |
-     |                                         |                                         |
-     |                                         |            3. redeem_ticket() <---------|
-     |                                         |               (matches proof_hash)      |
-     |                                         |                                         |
-     |                                         |     4. record_execution_receipt() <-----|
-     |                                         |        (anchors calldata_sha256 + tx)   |
-     |                                         |                                         |
-     |-- [Optional] terminate_mandate()        |     [After expires_at]                  |
-     |                                         |     5. sweep_expired_ticket() (anyone)  |
-
-# 1. Змінюємо v2 -> v3 у логотипах у папці brand/
-
-# 2. Копіюємо іконку на сайт як web/public/logo.svg
-mkdir -p web/public
-cp brand/logo-icon.svg web/public/logo.svg
-cp brand/logo.svg web/public/logo-full.svg
-
-# 3. Записуємо новий професійний README.md
-cat << 'EOF' > README.md
-<p align="center">
-  <img src="brand/logo.svg" alt="IntentMandateGuard v3.0" width="460" />
-</p>
-
-<h1 align="center">IntentMandateGuard v3.0</h1>
-
-<p align="center">
-  <strong>Bounded, non-transferable semantic execution mandates, single-use intent tickets, verbatim-grounded AI audits, deadline-split settlement, and on-chain execution receipts on GenLayer.</strong>
-</p>
-
-<p align="center">
-  <a href="https://dorinalunar.github.io/intent-mandate-guard/"><img src="https://img.shields.io/badge/Live_Console-GitHub_Pages-00bfa6?style=for-the-badge" alt="Live Console" /></a>
-  <a href="https://studio.genlayer.com/?import-contract=0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"><img src="https://img.shields.io/badge/GenLayer-Studio-6c5ce7?style=for-the-badge" alt="GenLayer Studio" /></a>
-  <a href="https://explorer-studio.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"><img src="https://img.shields.io/badge/Explorer-Contract-0984e3?style=for-the-badge" alt="Explorer" /></a>
-  <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-2d3436?style=for-the-badge" alt="MIT License" /></a>
-</p>
-
----
-
-## Live Deployment & Verification
-
-| Component | Details |
-| :--- | :--- |
-| **Protocol Version** | `IntentMandateGuard/v3.0` |
-| **Network** | GenLayer Studio Dev (`chain 61997`) |
-| **Contract Address** | [`0xcB45206f7162BFc5427Df038F750B1F3705e0c5a`](https://explorer-studio.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) |
-| **GenLayer Studio** | [Import Contract in Studio](https://studio.genlayer.com/?import-contract=0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) |
-| **Live Web Console** | [dorinalunar.github.io/intent-mandate-guard](https://dorinalunar.github.io/intent-mandate-guard/) |
-| **Source File** | [`contracts/IntentMandateGuard.py`](contracts/IntentMandateGuard.py) |
-| **Source SHA-256** | `8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1` |
-| **Deploy Record** | [`STUDIO_DEV_DEPLOY.md`](STUDIO_DEV_DEPLOY.md) |
-| **Milestone Hardening** | [`docs/MILESTONE_V3_HARDENING.md`](docs/MILESTONE_V3_HARDENING.md) |
-
----
-
-## Overview
-
-Autonomous agents and off-chain executors need bounded authority before interacting with high-value protocols. Traditional smart contract allowlists can check addresses and numeric caps, but they cannot verify natural-language policy constraints (such as slippage intent, approved counterparty context, or operational rules).
-
-**IntentMandateGuard v3.0** solves this on GenLayer by combining deterministic quota/nonce enforcement with **verbatim-grounded LLM validator consensus**:
-
-1. **Non-Custodial Authorization**: No native assets are custodied inside the guard contract; it issues cryptographic, single-use execution tickets verified by downstream adapters.
-2. **Verbatim Quote Grounding**: Every `PASS` verdict with `solid` certainty must cite an exact substring present in the canonical intent JSON, decoded payload, or mandate rules. Hallucinated or ungrounded approvals are automatically rejected.
-3. **Deadline-Split Settlement**: Tickets cleanly separate redemption (`can_redeem`) from permissionless expiration cleanup (`can_sweep`) at `expires_at`, ensuring reserved quota is never permanently locked.
-4. **On-Chain Execution Receipts**: After redemption, executors or operators anchor the downstream `calldata_sha256` and `external_tx_ref` on-chain for full end-to-end auditability.
-
----
-
-## Protocol Lifecycle
-
-```text
-[Principal]                               [Operator]                                [Executor]
-     |                                         |                                         |
-     |-- 1. register_mandate() --------------->|                                         |
-     |   (rules, methods, quota_cap, ttl)      |                                         |
-     |                                         |-- 2. issue_ticket() ------------------->|
-     |                                         |   (canonical intent + LLM audit)        |
-     |                                         |   [Validators verify verbatim quotes]   |
-     |                                         |                                         |
-     |                                         |            3. redeem_ticket() <---------|
-     |                                         |               (matches proof_hash)      |
-     |                                         |                                         |
-     |                                         |     4. record_execution_receipt() <-----|
-     |                                         |        (anchors calldata_sha256 + tx)   |
-     |                                         |                                         |
-     |-- [Optional] terminate_mandate()        |     [After expires_at]                  |
-     |                                         |     5. sweep_expired_ticket() (anyone)  |
-
-# 1. Змінюємо v2 -> v3 у логотипах у папці brand/
-
-# 2. Копіюємо іконку на сайт як web/public/logo.svg
-mkdir -p web/public
-cp brand/logo-icon.svg web/public/logo.svg
-cp brand/logo.svg web/public/logo-full.svg
-
-# 3. Записуємо новий професійний README.md
-cat << 'EOF' > README.md
-<p align="center">
-  <img src="brand/logo.svg" alt="IntentMandateGuard v3.0" width="460" />
-</p>
-
-<h1 align="center">IntentMandateGuard v3.0</h1>
-
-<p align="center">
-  <strong>Bounded, non-transferable semantic execution mandates, single-use intent tickets, verbatim-grounded AI audits, deadline-split settlement, and on-chain execution receipts on GenLayer.</strong>
-</p>
-
-<p align="center">
-  <a href="[https://dorinalunar.github.io/intent-mandate-guard/](https://dorinalunar.github.io/intent-mandate-guard/)"><img src="[https://img.shields.io/badge/Live_Console-GitHub_Pages-00bfa6?style=for-the-badge](https://img.shields.io/badge/Live_Console-GitHub_Pages-00bfa6?style=for-the-badge)" alt="Live Console" /></a>
-  <a href="[https://studio.genlayer.com/?import-contract=0xcB45206f7162BFc5427Df038F750B1F3705e0c5a](https://studio.genlayer.com/?import-contract=0xcB45206f7162BFc5427Df038F750B1F3705e0c5a)"><img src="[https://img.shields.io/badge/GenLayer-Studio-6c5ce7?style=for-the-badge](https://img.shields.io/badge/GenLayer-Studio-6c5ce7?style=for-the-badge)" alt="GenLayer Studio" /></a>
-  <a href="[https://explorer-studio.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a](https://explorer-studio.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a)"><img src="[https://img.shields.io/badge/Explorer-Contract-0984e3?style=for-the-badge](https://img.shields.io/badge/Explorer-Contract-0984e3?style=for-the-badge)" alt="Explorer" /></a>
-  <a href="LICENSE.md"><img src="[https://img.shields.io/badge/License-MIT-2d3436?style=for-the-badge](https://img.shields.io/badge/License-MIT-2d3436?style=for-the-badge)" alt="MIT License" /></a>
-</p>
-
----
-
-## Live Deployment & Verification
-
-| Component | Details |
-| :--- | :--- |
-| **Protocol Version** | `IntentMandateGuard/v3.0` |
-| **Network** | GenLayer Studio Dev (`chain 61997`) |
-| **Contract Address** | [`0xcB45206f7162BFc5427Df038F750B1F3705e0c5a`](https://explorer-studio.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) |
-| **GenLayer Studio** | [Import Contract in Studio](https://studio.genlayer.com/?import-contract=0xcB45206f7162BFc5427Df038F750B1F3705e0c5a) |
-| **Live Web Console** | [dorinalunar.github.io/intent-mandate-guard](https://dorinalunar.github.io/intent-mandate-guard/) |
-| **Source File** | [`contracts/IntentMandateGuard.py`](contracts/IntentMandateGuard.py) |
-| **Source SHA-256** | `8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1` |
-| **Deploy Record** | [`STUDIO_DEV_DEPLOY.md`](STUDIO_DEV_DEPLOY.md) |
-| **Milestone Hardening** | [`docs/MILESTONE_V3_HARDENING.md`](docs/MILESTONE_V3_HARDENING.md) |
-
----
-
-## Overview
-
-Autonomous agents and off-chain executors need bounded authority before interacting with high-value protocols. Traditional smart contract allowlists can check addresses and numeric caps, but they cannot verify natural-language policy constraints (such as slippage intent, approved counterparty context, or operational rules).
-
-**IntentMandateGuard v3.0** solves this on GenLayer by combining deterministic quota/nonce enforcement with **verbatim-grounded LLM validator consensus**:
-
-1. **Non-Custodial Authorization**: No native assets are custodied inside the guard contract; it issues cryptographic, single-use execution tickets verified by downstream adapters.
-2. **Verbatim Quote Grounding**: Every `PASS` verdict with `solid` certainty must cite an exact substring present in the canonical intent JSON, decoded payload, or mandate rules. Hallucinated or ungrounded approvals are automatically rejected.
-3. **Deadline-Split Settlement**: Tickets cleanly separate redemption (`can_redeem`) from permissionless expiration cleanup (`can_sweep`) at `expires_at`, ensuring reserved quota is never permanently locked.
-4. **On-Chain Execution Receipts**: After redemption, executors or operators anchor the downstream `calldata_sha256` and `external_tx_ref` on-chain for full end-to-end auditability.
-
----
-
-## Protocol Lifecycle
-
-```text
-[Principal]                  [Operator]                   [Executor]
-     |                            |                            |
-     |-- 1. register_mandate() -->|                            |
-     |   (rules, methods, caps)   |                            |
-     |                            |-- 2. issue_ticket() ------>|
-     |                            |   (canonical intent + AI)  |
-     |                            |                            |
-     |                            |      3. redeem_ticket() <--|
-     |                            |         (proof_hash match) |
-     |                            |                            |
-     |                            | 4. record_execution_receipt|
-     |                            |    (calldata_sha256 + tx)  |
-     |                            |                            |
-     |-- terminate_mandate()      | [After expires_at]         |
-     |                            | 5. sweep_expired_ticket()  |
-```
+    [Principal]                  [Operator]                   [Executor]
+         |                            |                            |
+         |-- 1. register_mandate() -->|                            |
+         |   (rules, methods, caps)   |                            |
+         |                            |-- 2. issue_ticket() ------>|
+         |                            |   (canonical intent + AI)  |
+         |                            |                            |
+         |                            |      3. redeem_ticket() <--|
+         |                            |         (proof_hash match) |
+         |                            |                            |
+         |                            | 4. record_execution_receipt|
+         |                            |    (calldata_sha256 + tx)  |
+         |                            |                            |
+         |-- terminate_mandate()      | [After expires_at]         |
+         |                            | 5. sweep_expired_ticket()  |
 
 ---
 
@@ -245,53 +89,45 @@ Autonomous agents and off-chain executors need bounded authority before interact
 
 ### 1. Run the Test Suite & Integrity Checks
 
-```bash
-python3 -m pip install -r requirements-dev.txt
-python3 scripts/update_code_snapshot.py verify
-python3 scripts/validate_schemas.py
-python3 -m pytest -v
-```
+    python3 -m pip install -r requirements-dev.txt
+    python3 scripts/update_code_snapshot.py verify
+    python3 scripts/validate_schemas.py
+    python3 -m pytest -v
 
 ### 2. Run the Web Console Locally
 
-```bash
-cd web
-npm install
-npm run dev
-# Open http://localhost:3000/console/
-```
+    cd web
+    npm install
+    npm run dev
+    # Open http://localhost:3000/console/
 
 ### 3. Verify Deployed Bytecode / Source Hash
 
-```bash
-curl -s -X POST https://studio-dev.genlayer.com/api -H 'content-type: application/json' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"gen_getContractCode","params":["0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"]}' \
-  | python3 -c "import sys,json,base64,hashlib; print(hashlib.sha256(base64.b64decode(json.load(sys.stdin)['result'])).hexdigest())"
+    curl -s -X POST https://studio-dev.genlayer.com/api -H 'content-type: application/json' \
+      -d '{"jsonrpc":"2.0","id":1,"method":"gen_getContractCode","params":["0xcB45206f7162BFc5427Df038F750B1F3705e0c5a"]}' \
+      | python3 -c "import sys,json,base64,hashlib; print(hashlib.sha256(base64.b64decode(json.load(sys.stdin)['result'])).hexdigest())"
 
-shasum -a 256 contracts/IntentMandateGuard.py
-# Expected: 8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1
-```
+    shasum -a 256 contracts/IntentMandateGuard.py
+    # Expected: 8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1
 
 ---
 
 ## Repository Structure
 
-```text
-intent-mandate-guard/
-├── contracts/
-│   └── IntentMandateGuard.py       # Core v3.0 GenLayer Intelligent Contract
-├── web/                            # Next.js static web console & documentation site
-│   ├── public/                     # Static assets, logo, OpenAPI, integrity packs
-│   └── src/                        # App Router pages, WalletProvider, Console UI
-├── test/                           # Unit & v3.0 hardening test suites (pytest)
-├── scripts/                        # Snapshot, schema validation & integrity pack CLIs
-├── schemas/                        # JSON Schemas for snapshots and intent tickets
-├── docs/                           # Hardening notes & Studio Dev runbooks
-├── brand/                          # SVG logos, icons, and brand guidelines
-├── ExecutionAdapter.py             # Reference downstream execution adapter
-├── STUDIO_DEV_DEPLOY.md            # On-chain deployment record & tx proofs
-└── ARCHITECTURE.md                 # System design and threat model
-```
+    intent-mandate-guard/
+    ├── contracts/
+    │   └── IntentMandateGuard.py       # Core v3.0 GenLayer Intelligent Contract
+    ├── web/                            # Next.js static web console & documentation site
+    │   ├── public/                     # Static assets, logo, OpenAPI, integrity packs
+    │   └── src/                        # App Router pages, WalletProvider, Console UI
+    ├── test/                           # Unit & v3.0 hardening test suites (pytest)
+    ├── scripts/                        # Snapshot, schema validation & integrity pack CLIs
+    ├── schemas/                        # JSON Schemas for snapshots and intent tickets
+    ├── docs/                           # Hardening notes & Studio Dev runbooks
+    ├── brand/                          # SVG logos and icons
+    ├── ExecutionAdapter.py             # Reference downstream execution adapter
+    ├── STUDIO_DEV_DEPLOY.md            # On-chain deployment record & tx proofs
+    └── ARCHITECTURE.md                 # System design and threat model
 
 ---
 
