@@ -22,7 +22,7 @@ def main() -> None:
         "name": "IntentMandateGuard v3.0 Integrity Pack",
         "protocol": "IntentMandateGuard/v3.0",
         "contract_address": "0xACA0da3b7b6CC25d8B65040f325F98603beAD072",
-        "deploy_tx": "0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c",
+        "deploy_tx": "0xab2461e23b7243a21ad85a9e1ebb992d864db8a6986ce8d3028bdb746263a299",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "files": {
             "CODE_SNAPSHOT.json": {

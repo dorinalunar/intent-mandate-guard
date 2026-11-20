@@ -2,8 +2,8 @@
   "name": "IntentMandateGuard v3.0 Integrity Pack",
   "protocol": "IntentMandateGuard/v3.0",
   "contract_address": "0xACA0da3b7b6CC25d8B65040f325F98603beAD072",
-  "deploy_tx": "0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c",
-  "generated_at": "2026-11-20T20:23:35Z",
+  "deploy_tx": "0xab2461e23b7243a21ad85a9e1ebb992d864db8a6986ce8d3028bdb746263a299",
+  "generated_at": "2026-11-20T20:47:18Z",
   "files": {
     "CODE_SNAPSHOT.json": {
       "sha256": "0e277ca366c9a49547b64ef21aa4dec864a7fa399f619003610544ef5e05d10e",
@@ -24,7 +24,7 @@
       "sha256": "482a81da33b7fb1b9ac70da158a31b6cb90cec68024f8831169d546dcef8fbff"
     },
     "templates/ticket_attestation.json": {
-      "sha256": "c81ab5fceb2843f6df728fcae15130ff3f15fde1edaf39d073b4a12235953ae3"
+      "sha256": "ffd0cc7582e4378436bec63ec18e4f7ba39bef6f1d8bc7940809c0a38c3bbb2a"
     },
     "contracts/IntentMandateGuard.py": {
       "sha256": "a464b7bc5364888aecc5727bf733a86c3d16169e64d4ecc5219033d53d6928de"

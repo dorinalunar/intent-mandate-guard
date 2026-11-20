@@ -12,11 +12,11 @@ export const DEFAULT_OPERATOR = "0x38409cca5f5ca70f3fe189638a87862318b478dd";
 export const DEFAULT_EXECUTOR = "0x38409cca5f5ca70f3fe189638a87862318b478dd";
 
 export const DEPLOY_TX =
-  "0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c";
+  "0xab2461e23b7243a21ad85a9e1ebb992d864db8a6986ce8d3028bdb746263a299";
 export const CALL_TX_1 =
-  "0x94151a08f4a0bed67e2fd44ac44e26f9008fbad12aa14d51686d9364b52b5b28";
+  "0xe1b424e54ccdab4e1721c6a5f17de7f36060a7247f83c38ec49116007ff8cfd4";
 export const CALL_TX_2 =
-  "0x62048c591d8e3814b006bfbe813a9f0a69c2d6833943c56f881d8b814967886d";
+  "0x0a687de7d4ddcecd0a3c02a83a29972ba42af15931b6709886e57fc6a611d2c5";
 
 export function txUrl(hash: string): string {
   return hash ? `${EXPLORER_BASE}/tx/${hash}` : EXPLORER;

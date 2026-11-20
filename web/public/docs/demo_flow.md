@@ -29,6 +29,6 @@ Contract: `0xACA0da3b7b6CC25d8B65040f325F98603beAD072` (GenLayer Studio Dev, cha
 4. record_execution_receipt(
      ticket_id=1,
      calldata_sha256="9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
-     external_tx_ref="0x62048c591d8e3814b006bfbe813a9f0a69c2d6833943c56f881d8b814967886d"
+     external_tx_ref="0x0a687de7d4ddcecd0a3c02a83a29972ba42af15931b6709886e57fc6a611d2c5"
    )
 ```

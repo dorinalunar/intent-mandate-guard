@@ -6,7 +6,7 @@
 |---|---|
 | **Protocol Tag** | `IntentMandateGuard/v3.0` |
 | **Deployment Address** | [`0xACA0da3b7b6CC25d8B65040f325F98603beAD072`](https://explorer-studio-dev.genlayer.com/address/0xACA0da3b7b6CC25d8B65040f325F98603beAD072) |
-| **Deploy Transaction** | [`0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c`](https://explorer-studio-dev.genlayer.com/tx/0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c) |
+| **Deploy Transaction** | [`0xab2461e23b7243a21ad85a9e1ebb992d864db8a6986ce8d3028bdb746263a299`](https://explorer-studio-dev.genlayer.com/tx/0xab2461e23b7243a21ad85a9e1ebb992d864db8a6986ce8d3028bdb746263a299) |
 | **Contract SHA-256** | `8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1` |
 | **Verification Suite** | 60 unit & property tests (`tests/test_mandate_lifecycle.py` + `tests/test_v3_hardening.py`) |
 
@@ -30,5 +30,5 @@
 
 ## Verification
 
-* **On-Chain Studio Dev Run**: Confirmed `Deploy` (`0x6b88abc0bf8f...`), `register_mandate` (`0x94151a08f4a0...`), and `issue_ticket` (`0x62048c591d8e...`) finalized on [`0xACA0da3b7b6CC25d8B65040f325F98603beAD072`](https://explorer-studio-dev.genlayer.com/address/0xACA0da3b7b6CC25d8B65040f325F98603beAD072).
+* **On-Chain Studio Dev Run**: Confirmed `Deploy` (`0xab2461e23b72...`), `register_mandate` (`0xe1b424e54ccd...`), and `issue_ticket` (`0x0a687de7d4dd...`) finalized on [`0xACA0da3b7b6CC25d8B65040f325F98603beAD072`](https://explorer-studio-dev.genlayer.com/address/0xACA0da3b7b6CC25d8B65040f325F98603beAD072).
 * **Offline Test Suite**: 60 automated tests covering lifecycle transitions, role enforcement, nonce replay protection, quote grounding, consensus disagreement, deadline boundaries, pagination, and randomized quota-conservation fuzzing.

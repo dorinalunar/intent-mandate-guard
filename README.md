@@ -79,9 +79,9 @@ Autonomous agents and off-chain executors need bounded authority before interact
 
 | Step | Action | Sender | Status | Transaction |
 | :---: | :--- | :--- | :---: | :--- |
-| 1 | `Deploy` (`IntentMandateGuard/v3.0`) | `0x38409cca...18b478dd` | `FINALIZED` | [`0x6b88abc0...8a3853c`](https://explorer-studio-dev.genlayer.com/tx/0x6b88abc0bf8f373281f6d8bebd8c1291b7f163b5f641306914408bde48a3853c) |
-| 2 | `register_mandate` | `0x38409cca...18b478dd` | `FINALIZED` | [`0x94151a08...52b5b28`](https://explorer-studio-dev.genlayer.com/tx/0x94151a08f4a0bed67e2fd44ac44e26f9008fbad12aa14d51686d9364b52b5b28) |
-| 3 | `issue_ticket` | `0x38409cca...18b478dd` | `FINALIZED` | [`0x62048c59...967886d`](https://explorer-studio-dev.genlayer.com/tx/0x62048c591d8e3814b006bfbe813a9f0a69c2d6833943c56f881d8b814967886d) |
+| 1 | `Deploy` (`IntentMandateGuard/v3.0`) | `0x38409cca...18b478dd` | `FINALIZED` | [`0xab2461e2...263a299`](https://explorer-studio-dev.genlayer.com/tx/0xab2461e23b7243a21ad85a9e1ebb992d864db8a6986ce8d3028bdb746263a299) |
+| 2 | `register_mandate` | `0x38409cca...18b478dd` | `FINALIZED` | [`0xe1b424e5...ff8cfd4`](https://explorer-studio-dev.genlayer.com/tx/0xe1b424e54ccdab4e1721c6a5f17de7f36060a7247f83c38ec49116007ff8cfd4) |
+| 3 | `issue_ticket` | `0x38409cca...18b478dd` | `FINALIZED` | [`0x0a687de7...611d2c5`](https://explorer-studio-dev.genlayer.com/tx/0x0a687de7d4ddcecd0a3c02a83a29972ba42af15931b6709886e57fc6a611d2c5) |
 
 ---
 

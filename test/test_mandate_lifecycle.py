@@ -30,7 +30,7 @@ VALID_INTENT = json.dumps({
     "payload": json.dumps({"tokenIn": "USDC", "tokenOut": "WETH", "amount": 2500, "maxSlippageBps": 25}, separators=(",", ":")),
 }, separators=(",", ":"))
 HASH_64 = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
-TX_REF = "0x62048c591d8e3814b006bfbe813a9f0a69c2d6833943c56f881d8b814967886d"
+TX_REF = "0x0a687de7d4ddcecd0a3c02a83a29972ba42af15931b6709886e57fc6a611d2c5"
 
 
 @pytest.fixture(autouse=True)
