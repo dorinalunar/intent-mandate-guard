@@ -1,4 +1,4 @@
-# System Architecture — IntentMandateGuard (`IntentMandateGuard/v2.0`)
+# System Architecture — IntentMandateGuard (`IntentMandateGuard/v3.0`)
 
 ## Overview
 
@@ -59,7 +59,7 @@
 
 Every issued ticket computes a deterministic SHA-256 `proof_hash` over the canonical JSON serialization of:
 
-* `protocol`: `"IntentMandateGuard/v2.0"`
+* `protocol`: `"IntentMandateGuard/v3.0"`
 * `chain_id`: GenVM execution chain identifier (`gl.message.chain_id`)
 * `contract`: Deployed `IntentMandateGuard` contract address
 * `mandate_id`: Parent mandate identifier

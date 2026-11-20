@@ -67,7 +67,6 @@ Autonomous agents and off-chain executors need bounded authority before interact
      |                                         |     5. sweep_expired_ticket() (anyone)  |
 
 # 1. Змінюємо v2 -> v3 у логотипах у папці brand/
-sed -i 's/v2/v3/g; s/V2/V3/g' brand/logo.svg brand/logo-icon.svg
 
 # 2. Копіюємо іконку на сайт як web/public/logo.svg
 mkdir -p web/public
@@ -145,7 +144,6 @@ Autonomous agents and off-chain executors need bounded authority before interact
      |                                         |     5. sweep_expired_ticket() (anyone)  |
 
 # 1. Змінюємо v2 -> v3 у логотипах у папці brand/
-sed -i 's/v2/v3/g; s/V2/V3/g' brand/logo.svg brand/logo-icon.svg
 
 # 2. Копіюємо іконку на сайт як web/public/logo.svg
 mkdir -p web/public
