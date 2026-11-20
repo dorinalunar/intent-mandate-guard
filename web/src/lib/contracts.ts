@@ -8,8 +8,10 @@ export type ExecutionReceipt = Record<string, any>;
 
 export async function getProtocolVersion(): Promise<string> {
   try {
-    const res = await readContract<string>("get_protocol_version");
-    return res || "IntentMandateGuard/v3.0";
+    const res = await readContract<string>("protocol_version");
+    if (typeof res === "string" && res) return res;
+    const legacy = await readContract<string>("get_protocol_version");
+    return legacy || "IntentMandateGuard/v3.0";
   } catch {
     return "IntentMandateGuard/v3.0";
   }
