@@ -41,7 +41,9 @@ export function formatError(err: unknown): string {
   }
 }
 
-function getClient(account?: Address) {
+let consensusInitialized = false;
+
+function getClient() {
   const eth =
     typeof window !== "undefined"
       ? (window as unknown as { ethereum?: unknown }).ethereum
@@ -56,7 +58,6 @@ function getClient(account?: Address) {
       },
     },
     endpoint: RPC_URL,
-    ...(account ? { account } : {}),
     ...(eth ? { provider: eth as never } : {}),
   });
 }
@@ -131,8 +132,13 @@ export async function writeContract(
     throw new Error("Wallet address is missing. Reconnect MetaMask.");
   }
   try {
-    const client = getClient(from);
+    const client = getClient();
+    if (!consensusInitialized) {
+      await client.initializeConsensusSmartContract();
+      consensusInitialized = true;
+    }
     const txHash = await client.writeContract({
+      account: from,
       address: CONTRACT_ADDRESS as Address,
       functionName: method,
       args: toCalldataArgs(args),
