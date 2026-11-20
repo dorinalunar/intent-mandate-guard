@@ -1,0 +1,84 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "IntentMandateGuard v3.0 Intelligent Contract",
+    "version": "3.0.0",
+    "description": "GenLayer Studio Dev surface for contracts/IntentMandateGuard.py (chain 61997).",
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://explorer-studio-dev.genlayer.com/address/0xcB45206f7162BFc5427Df038F750B1F3705e0c5a",
+      "description": "Live Studio Dev v3.0 Contract"
+    }
+  ],
+  "paths": {
+    "/register_mandate": {
+      "post": {
+        "summary": "Register bounded semantic execution mandate"
+      }
+    },
+    "/issue_ticket": {
+      "post": {
+        "summary": "Issue single-use intent ticket after verbatim-grounded LLM audit"
+      }
+    },
+    "/redeem_ticket": {
+      "post": {
+        "summary": "Redeem ACTIVE ticket against exact cryptographic intent anchor"
+      }
+    },
+    "/record_execution_receipt": {
+      "post": {
+        "summary": "Record downstream calldata SHA-256 and external tx reference"
+      }
+    },
+    "/cancel_reservation": {
+      "post": {
+        "summary": "Cancel ACTIVE ticket reservation and unlock quota"
+      }
+    },
+    "/sweep_expired_ticket": {
+      "post": {
+        "summary": "Permissionless post-deadline cleanup for expired tickets"
+      }
+    },
+    "/terminate_mandate": {
+      "post": {
+        "summary": "Principal terminates mandate"
+      }
+    },
+    "/get_mandate": {
+      "get": {
+        "summary": "Read mandate JSON"
+      }
+    },
+    "/get_ticket": {
+      "get": {
+        "summary": "Read ticket JSON"
+      }
+    },
+    "/get_ticket_schedule": {
+      "get": {
+        "summary": "Read deadline-split schedule"
+      }
+    },
+    "/get_audit_round": {
+      "get": {
+        "summary": "Read verbatim-grounded AI audit matrix"
+      }
+    },
+    "/get_execution_receipt": {
+      "get": {
+        "summary": "Read on-chain execution receipt"
+      }
+    },
+    "/get_stats": {
+      "get": {
+        "summary": "Read protocol counters and quota metrics"
+      }
+    }
+  }
+}

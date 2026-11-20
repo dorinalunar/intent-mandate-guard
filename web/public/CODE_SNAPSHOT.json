@@ -1,0 +1,9 @@
+{
+  "commit": "7275ced86e5bf37756c1701b677a689cd9bd6b47",
+  "evidence_hash": "98387f387032066c115f9671be4c9d82329bdd3b31a116b18c4b7fc1e34f8579",
+  "evidence_hash_algo": "sha256(git_rev_parse_HEAD)",
+  "contract_hash": "8e207b783f0a5b50c119c7ff28477b3bf9bc02ef95f71afea0b1a35688cf29a1",
+  "contract_hash_algo": "sha256(contracts/IntentMandateGuard.py)",
+  "timestamp": "2026-11-19T23:34:13Z",
+  "note": "IntentMandateGuard v3.0 deployment snapshot (0xcB45206f7162BFc5427Df038F750B1F3705e0c5a)"
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://intentmandateguard.local/schemas/intent_ticket.json",
+  "title": "IntentMandateGuard Intent & Execution Receipt Schema",
+  "type": "object",
+  "required": [
+    "method",
+    "target",
+    "payload"
+  ],
+  "properties": {
+    "method": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "payload": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 6000
+    }
+  },
+  "additionalProperties": false
+}
