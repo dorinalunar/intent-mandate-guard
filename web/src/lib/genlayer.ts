@@ -1,7 +1,7 @@
 import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 import type { CalldataEncodable } from "genlayer-js/types";
-import { CONTRACT_ADDRESS, RPC_URL } from "./config";
+import { CHAIN_ID, CONTRACT_ADDRESS, RPC_URL } from "./config";
 
 export type Address = `0x${string}`;
 
@@ -50,6 +50,7 @@ function getClient(account?: Address) {
   return createClient({
     chain: {
       ...studionet,
+      id: CHAIN_ID,
       rpcUrls: {
         default: { http: [RPC_URL] },
       },
