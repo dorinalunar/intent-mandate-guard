@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { CHAIN_ID, RPC_URL, EXPLORER_BASE } from "@/lib/config";
+import { CHAIN_ID, EXPLORER_BASE, RPC_URL } from "@/lib/config";
 import type { Address } from "@/lib/genlayer";
 
 type EthereumProvider = {
@@ -34,7 +34,7 @@ function getEthereum(): EthereumProvider | undefined {
   return (window as unknown as { ethereum?: EthereumProvider }).ethereum;
 }
 
-async function ensureStudioDev(eth: EthereumProvider) {
+async function ensureStudioNext(eth: EthereumProvider) {
   const hexId = `0x${CHAIN_ID.toString(16)}`;
   try {
     await eth.request({
@@ -71,7 +71,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const bind = useCallback(async (eth: EthereumProvider, acc: string) => {
     const typed = acc as Address;
     try {
-      await ensureStudioDev(eth);
+      await ensureStudioNext(eth);
       setAddress(typed);
       setProvider(eth);
       setReady(true);

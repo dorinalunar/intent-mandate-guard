@@ -73,7 +73,26 @@ export async function writeAndWait(
   args: CalldataEncodable[] = [],
   value: bigint = BigInt(0),
 ): Promise<string> {
-  const client = getWriteClient(account, provider as EthereumProvider);
+  const eth =
+    (provider as EthereumProvider) ||
+    (typeof window !== "undefined"
+      ? (window as unknown as { ethereum?: EthereumProvider }).ethereum
+      : undefined);
+
+  if (!eth) {
+    throw new Error("MetaMask provider not found. Reconnect wallet.");
+  }
+
+  let activeAccount = account;
+  if (!activeAccount || !activeAccount.startsWith("0x")) {
+    const accounts = (await (eth as { request: (a: { method: string }) => Promise<string[]> }).request({
+      method: "eth_requestAccounts",
+    }));
+    if (!accounts?.[0]) throw new Error("No active MetaMask account found.");
+    activeAccount = accounts[0] as Address;
+  }
+
+  const client = getWriteClient(activeAccount, eth);
   const fees = await client.estimateTransactionFees({});
   const hash = await client.writeContract({
     address: CONTRACT_ADDRESS as Address,
