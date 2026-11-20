@@ -1,4 +1,4 @@
-"""v3.1 fixes: consensus binds the authorization bit, rule text is not evidence, the default
+"""v3.0 fixes: consensus binds the authorization bit, rule text is not evidence, the default
 chain id is Studio Dev, the per-mandate ticket index is O(1) per ticket, and the execution
 adapter refuses bad input before burning a ticket and waits for finality before acting."""
 
@@ -65,7 +65,7 @@ def issue(c, mid, nonce=1):
 
 # -- consensus binds what decides authorization --
 
-def test_v31_01_validator_with_moderate_certainty_disagrees_with_solid_leader():
+def test_sec_01_validator_with_moderate_certainty_disagrees_with_solid_leader():
     c = mod.IntentMandateGuard()
     mid = make_mandate(c)
     moderate = json.loads(json.dumps(SOLID))
@@ -76,7 +76,7 @@ def test_v31_01_validator_with_moderate_certainty_disagrees_with_solid_leader():
         c.issue_ticket(mid, 1, VALID_INTENT, 1000, 300)
 
 
-def test_v31_02_validator_with_ungrounded_quote_disagrees_with_grounded_leader():
+def test_sec_02_validator_with_ungrounded_quote_disagrees_with_grounded_leader():
     c = mod.IntentMandateGuard()
     mid = make_mandate(c)
     ungrounded = json.loads(json.dumps(SOLID))
@@ -87,7 +87,7 @@ def test_v31_02_validator_with_ungrounded_quote_disagrees_with_grounded_leader()
         c.issue_ticket(mid, 1, VALID_INTENT, 1000, 300)
 
 
-def test_v31_03_both_moderate_agree_and_ticket_is_denied():
+def test_sec_03_both_moderate_agree_and_ticket_is_denied():
     c = mod.IntentMandateGuard()
     mid = make_mandate(c)
     moderate = json.loads(json.dumps(SOLID))
@@ -98,7 +98,7 @@ def test_v31_03_both_moderate_agree_and_ticket_is_denied():
     assert c.get_mandate(mid)["locked_quota"] == 0
 
 
-def test_v31_04_rule_text_never_grounds_a_quote():
+def test_sec_04_rule_text_never_grounds_a_quote():
     assert mod.quote_grounded_in_source(
         "must not exceed 50 bps", '{"method":"x","payload":"{}","target":"y"}', ["must not exceed 50 bps"], {}
     ) is False
@@ -106,7 +106,7 @@ def test_v31_04_rule_text_never_grounds_a_quote():
 
 # -- anchor and bookkeeping --
 
-def test_v31_05_anchor_defaults_to_studio_dev_chain_id():
+def test_sec_05_anchor_defaults_to_studio_dev_chain_id():
     c = mod.IntentMandateGuard()
     mid = make_mandate(c)
     del gl.message.chain_id
@@ -117,7 +117,7 @@ def test_v31_05_anchor_defaults_to_studio_dev_chain_id():
     assert c.get_ticket(tid)["anchor"]["chain_id"] == 61997
 
 
-def test_v31_06_mandate_ticket_index_pages_in_order_without_a_json_list():
+def test_sec_06_mandate_ticket_index_pages_in_order_without_a_json_list():
     c = mod.IntentMandateGuard()
     m1 = make_mandate(c, tx_cap=50)
     m2 = make_mandate(c, tx_cap=50)
@@ -132,7 +132,7 @@ def test_v31_06_mandate_ticket_index_pages_in_order_without_a_json_list():
     assert [t["id"] for t in page3["items"]] == ids_m1[10:] and page3["has_more"] is False
 
 
-def test_v31_07_swept_by_is_stored_as_hex():
+def test_sec_07_swept_by_is_stored_as_hex():
     c = mod.IntentMandateGuard()
     mid = make_mandate(c)
     tid = issue(c, mid)
@@ -165,7 +165,7 @@ def _ready():
     return c, tid
 
 
-def test_v31_08_padded_target_is_refused_before_the_ticket_is_burned():
+def test_sec_08_padded_target_is_refused_before_the_ticket_is_burned():
     c, tid = _ready()
     adapter = IntentExecutionAdapter(_Guard(c), wait_for_finality=lambda _t: True)
     with pytest.raises(ExecutionAdapterError, match="whitespace"):
@@ -173,7 +173,7 @@ def test_v31_08_padded_target_is_refused_before_the_ticket_is_burned():
     assert c.get_ticket(tid)["state"] == "ACTIVE"
 
 
-def test_v31_09_adapter_refuses_to_run_without_a_finality_waiter():
+def test_sec_09_adapter_refuses_to_run_without_a_finality_waiter():
     c, tid = _ready()
     adapter = IntentExecutionAdapter(_Guard(c))
     with pytest.raises(ExecutionAdapterError, match="finality"):
@@ -181,7 +181,7 @@ def test_v31_09_adapter_refuses_to_run_without_a_finality_waiter():
     assert c.get_ticket(tid)["state"] == "ACTIVE"
 
 
-def test_v31_10_unfinalized_redemption_dispatches_nothing():
+def test_sec_10_unfinalized_redemption_dispatches_nothing():
     c, tid = _ready()
     calls = []
     adapter = IntentExecutionAdapter(_Guard(c), wait_for_finality=lambda _t: False)
@@ -190,7 +190,7 @@ def test_v31_10_unfinalized_redemption_dispatches_nothing():
     assert calls == []
 
 
-def test_v31_11_finalized_redemption_dispatches_exact_calldata_once():
+def test_sec_11_finalized_redemption_dispatches_exact_calldata_once():
     c, tid = _ready()
     calls = []
     adapter = IntentExecutionAdapter(_Guard(c), wait_for_finality=lambda _t: True)

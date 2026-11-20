@@ -67,7 +67,7 @@ def test_25_quote_grounding_accepts_unescaped_inner_json_key_value():
 
 
 def test_26_quote_from_rule_text_is_not_evidence_and_denies():
-    # v3.1: a quote copied from the rule itself proves nothing about the intent.
+    # v3.0: a quote copied from the rule itself proves nothing about the intent.
     c = mod.IntentMandateGuard()
     mid = make_mandate(c)
     gl.llm_reply = {
