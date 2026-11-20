@@ -50,7 +50,7 @@ def make_mandate(c, op=OPERATOR, ex=EXECUTOR, quota=50000, tx_cap=10, ttl=3600):
 
 def test_01_protocol_version_tag():
     c = mod.IntentMandateGuard()
-    assert c.protocol_version() == "IntentMandateGuard/v3.0"
+    assert c.protocol_version() == "IntentMandateGuard/v3.1"
 
 
 def test_02_initial_stats_are_zeroed():

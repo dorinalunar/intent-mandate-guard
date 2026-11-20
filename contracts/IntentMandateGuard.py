@@ -1,5 +1,5 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
-"""IntentMandateGuard v3.0: bounded, non-transferable semantic execution mandates,
+"""IntentMandateGuard v3.1: bounded, non-transferable semantic execution mandates,
 single-use intent tickets, verbatim-grounded AI audits, deadline-split settlement,
 paged views, and on-chain execution receipts.
 
@@ -11,7 +11,8 @@ import hashlib
 import json
 from genlayer import *
 
-PROTOCOL_TAG = "IntentMandateGuard/v3.0"
+PROTOCOL_TAG = "IntentMandateGuard/v3.1"
+STUDIO_DEV_CHAIN_ID = 61997
 
 ZERO_ADDRESS_HEX = "0x" + "00" * 20
 MAX_RULE_CHARS = 800
@@ -96,7 +97,9 @@ def parse_intent_payload(raw_str: str) -> dict:
     }
 
 
-def _build_searchable_sources(intent: dict, canonical_intent_str: str, rules: list) -> list:
+def _build_searchable_sources(intent: dict, canonical_intent_str: str, rules: list = None) -> list:
+    """Evidence must come from the intent only. Rule text is never evidence that the
+    intent satisfies the rule, so `rules` is accepted for signature compatibility and ignored."""
     sources = [
         canonical_intent_str,
         canonical_intent_str.replace('\\"', '"'),
@@ -115,8 +118,6 @@ def _build_searchable_sources(intent: dict, canonical_intent_str: str, rules: li
                 sources.append(str(v))
     except Exception:
         pass
-    for r in rules:
-        sources.append(str(r))
     return [normalize_whitespace(s).lower() for s in sources if isinstance(s, str) and s.strip()]
 
 
@@ -128,7 +129,7 @@ def quote_grounded_in_source(quote: str, canonical_intent_str: str, rules: list,
         return False
     norm_quote = clean_quote.replace('\\"', '"').lower()
     intent_dict = intent if isinstance(intent, dict) else {}
-    sources = _build_searchable_sources(intent_dict, canonical_intent_str, rules or [])
+    sources = _build_searchable_sources(intent_dict, canonical_intent_str)
     return any(norm_quote in src for src in sources)
 
 
@@ -187,6 +188,18 @@ def normalize_assessments(raw_obj, expected_len: int, canonical_intent_str: str 
     return sorted_matrix
 
 
+def rule_authorized(item: dict) -> bool:
+    """The exact per-rule bit that decides authorization."""
+    return item["outcome"] == "PASS" and item["certainty"] == "solid" and bool(item["grounded"])
+
+
+def consensus_signature(matrix: list) -> list:
+    """Everything that can change whether a ticket is issued: the outcome of every rule AND
+    whether that rule counts toward authorization (PASS + solid + grounded quote).
+    Validators must match this exactly; quote wording may differ."""
+    return [(item["index"], item["outcome"], rule_authorized(item)) for item in matrix]
+
+
 def evaluate_rules_nondet(rules: list, intent: dict) -> list:
     canonical_intent_str = to_canonical_json(intent)
     prompt = (
@@ -199,8 +212,8 @@ def evaluate_rules_nondet(rules: list, intent: dict) -> list:
         "AMBIGUOUS: insufficient context, vague parameters, or verification requires external off-chain state.\n"
         "Certainty tiers: solid=explicit and unmistakable; moderate=requires minor inference; "
         "weak=missing or conflicting evidence.\n"
-        "For EVERY rule, provide a verbatim 'quote' (up to 240 chars) copied from the intent JSON or rule text "
-        "that supports your assessment.\n"
+        "For EVERY rule, provide a verbatim 'quote' (up to 240 chars) copied from the intent JSON "
+        "(never from the rule text) that supports your assessment.\n"
         "Authorization requires PASS + solid + grounded quote for EVERY rule.\n"
         'Respond strictly with JSON: {"assessments":[{"index":0,"outcome":"PASS|FAIL|AMBIGUOUS",'
         '"certainty":"solid|moderate|weak","quote":"..."},...]}.\n'
@@ -220,7 +233,8 @@ class IntentMandateGuard(gl.Contract):
     tickets: TreeMap[u256, str]
     audit_rounds: TreeMap[u256, str]
     execution_receipts: TreeMap[u256, str]
-    mandate_ticket_ids: TreeMap[u256, str]
+    mandate_ticket_count: TreeMap[u256, u256]
+    mandate_ticket_at: TreeMap[str, u256]
     used_nonces: TreeMap[str, bool]
     mandate_seq: u256
     ticket_seq: u256
@@ -258,13 +272,11 @@ class IntentMandateGuard(gl.Contract):
         return decode_json(self.tickets[tid])
 
     def _append_mandate_ticket(self, mandate_id: u256, ticket_id: int) -> None:
+        # O(1) per ticket: one counter and one index slot, instead of rewriting a growing JSON list.
         mid = u256(int(mandate_id))
-        raw_list = self.mandate_ticket_ids.get(mid, "[]")
-        ids = decode_json(raw_list)
-        if not isinstance(ids, list):
-            ids = []
-        ids.append(int(ticket_id))
-        self.mandate_ticket_ids[mid] = to_canonical_json(ids)
+        n = int(self.mandate_ticket_count.get(mid, u256(0)))
+        self.mandate_ticket_at[str(int(mid)) + ":" + str(n)] = u256(int(ticket_id))
+        self.mandate_ticket_count[mid] = u256(n + 1)
 
     def _assert_mandate_invariants(self, mandate: dict) -> None:
         locked_q = int(mandate["locked_quota"])
@@ -357,7 +369,7 @@ class IntentMandateGuard(gl.Contract):
 
         self.mandate_seq = next_id
         self.mandates[next_id] = to_canonical_json(record)
-        self.mandate_ticket_ids[next_id] = "[]"
+        self.mandate_ticket_count[next_id] = u256(0)
         self._assert_global_invariants()
         return next_id
 
@@ -418,13 +430,7 @@ class IntentMandateGuard(gl.Contract):
                     intent,
                 )
                 independent = evaluate_rules_nondet(rules, intent)
-                return [
-                    (a["index"], a["outcome"])
-                    for a in candidate
-                ] == [
-                    (b["index"], b["outcome"])
-                    for b in independent
-                ]
+                return consensus_signature(candidate) == consensus_signature(independent)
             except Exception:
                 return False
 
@@ -436,14 +442,11 @@ class IntentMandateGuard(gl.Contract):
             rules,
             intent,
         )
-        approved = all(
-            item["outcome"] == "PASS" and item["certainty"] == "solid" and bool(item["grounded"])
-            for item in matrix
-        )
+        approved = all(rule_authorized(item) for item in matrix)
 
         anchor = {
             "protocol": PROTOCOL_TAG,
-            "chain_id": int(getattr(gl.message, "chain_id", 61999)),
+            "chain_id": int(getattr(gl.message, "chain_id", STUDIO_DEV_CHAIN_ID)),
             "contract": _addr_to_hex(gl.message.contract_address),
             "mandate_id": int(mid),
             "seq_nonce": nonce_val,
@@ -639,7 +642,7 @@ class IntentMandateGuard(gl.Contract):
 
         ticket["state"] = "EXPIRED"
         ticket["swept_at"] = now_ts
-        ticket["swept_by"] = str(gl.message.sender_address)
+        ticket["swept_by"] = _addr_to_hex(gl.message.sender_address)
 
         self.active_tickets_count = u256(max(0, int(self.active_tickets_count) - 1))
         self.expired_tickets_count = u256(int(self.expired_tickets_count) + 1)
@@ -759,12 +762,11 @@ class IntentMandateGuard(gl.Contract):
             page_size = DEFAULT_PAGE_LIMIT
         if page_size > MAX_PAGE_LIMIT:
             page_size = MAX_PAGE_LIMIT
-        all_ids = decode_json(self.mandate_ticket_ids.get(mid, "[]"))
-        if not isinstance(all_ids, list):
-            all_ids = []
-        total = len(all_ids)
-        slice_ids = all_ids[start : start + page_size]
-        items = [self._load_ticket(u256(int(tid))) for tid in slice_ids]
+        total = int(self.mandate_ticket_count.get(mid, u256(0)))
+        items = [
+            self._load_ticket(self.mandate_ticket_at[str(int(mid)) + ":" + str(i)])
+            for i in range(start, min(total, start + page_size))
+        ]
         return {
             "mandate_id": int(mid),
             "offset": start,

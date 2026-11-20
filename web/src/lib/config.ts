@@ -2,7 +2,7 @@ export const CHAIN_ID = 61997;
 export const RPC_URL = "https://studio-dev.genlayer.com/api";
 export const STUDIO_URL =
   "https://studio.genlayer.com/?import-contract=0xcB45206f7162BFc5427Df038F750B1F3705e0c5a";
-export const EXPLORER_BASE = "https://explorer-studio.genlayer.com";
+export const EXPLORER_BASE = "https://explorer-studio-dev.genlayer.com";
 
 export const CONTRACT_ADDRESS = "0xcB45206f7162BFc5427Df038F750B1F3705e0c5a";
 export const EXPLORER = `${EXPLORER_BASE}/address/${CONTRACT_ADDRESS}`;

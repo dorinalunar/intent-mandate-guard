@@ -6,7 +6,12 @@ dispatched, and records verifiable external action enforcement.
 """
 import hashlib
 import json
-from IntentMandateGuard import PROTOCOL_TAG, to_canonical_json, parse_intent_payload
+from IntentMandateGuard import (
+    PROTOCOL_TAG,
+    STUDIO_DEV_CHAIN_ID,
+    to_canonical_json,
+    parse_intent_payload,
+)
 
 
 class ExecutionAdapterError(Exception):
@@ -29,10 +34,21 @@ class IntentExecutionAdapter:
     IntentMandateGuard ticket and the external action / calldata performed.
     """
 
-    def __init__(self, guard_contract, chain_id: int = 61999, contract_address: str = ""):
+    def __init__(
+        self,
+        guard_contract,
+        chain_id: int = STUDIO_DEV_CHAIN_ID,
+        contract_address: str = "",
+        wait_for_finality=None,
+    ):
+        """`wait_for_finality(ticket_id) -> bool` must block until the redeem_ticket transaction
+        is FINALIZED on GenLayer (ACCEPTED can still be appealed) and return True. Production use
+        must pass one; without it the adapter refuses to dispatch external effects unless
+        `allow_unfinalized=True` is passed explicitly (tests and local demos only)."""
         self.guard = guard_contract
         self.chain_id = int(chain_id)
         self.contract_address = str(contract_address)
+        self.wait_for_finality = wait_for_finality
         self.executed_actions = []
         self.consumed_proofs = set()
 
@@ -43,6 +59,7 @@ class IntentExecutionAdapter:
         method: str,
         calldata_payload: str,
         action_handler=None,
+        allow_unfinalized: bool = False,
     ) -> dict:
         """1. Packages the proposed external action into a canonical intent JSON.
         2. Consumes the ticket on IntentMandateGuard via redeem_ticket().
@@ -58,6 +75,25 @@ class IntentExecutionAdapter:
 
         # Validate structure before redemption
         validated_intent = parse_intent_payload(intent_json)
+
+        # Refuse BEFORE burning the ticket: the contract strips whitespace, so a padded field would
+        # redeem successfully and then fail the field-level check below, wasting the ticket.
+        if (
+            validated_intent["target"] != target
+            or validated_intent["method"] != method
+            or validated_intent["payload"] != calldata_payload
+        ):
+            raise ExecutionAdapterError(
+                "[ADAPTER_HALT] target, method and payload must not carry surrounding whitespace"
+            )
+        try:
+            json.loads(calldata_payload)
+        except (ValueError, TypeError):
+            raise ExecutionAdapterError("[ADAPTER_HALT] payload must be a JSON document")
+        if self.wait_for_finality is None and not allow_unfinalized:
+            raise ExecutionAdapterError(
+                "[ADAPTER_HALT] no finality waiter configured; refusing to act on an unfinalized redemption"
+            )
 
         # Fetch pre-redemption ticket state to verify anchor metadata
         ticket_before = self.guard.get_ticket(ticket_id)
@@ -105,6 +141,12 @@ class IntentExecutionAdapter:
         if recomputed_proof != proof_hash:
             raise ExecutionAdapterError(
                 "[ADAPTER_HALT] Cryptographic proof_hash verification failed"
+            )
+
+        # Act only once the redemption is final; an ACCEPTED transaction can still be appealed.
+        if self.wait_for_finality is not None and not self.wait_for_finality(int(ticket_id)):
+            raise ExecutionAdapterError(
+                "[ADAPTER_HALT] redemption not finalized; external effect not dispatched"
             )
 
         # Construct exact deterministic calldata and dispatch external action

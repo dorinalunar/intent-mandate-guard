@@ -66,18 +66,21 @@ def test_25_quote_grounding_accepts_unescaped_inner_json_key_value():
     assert all(a["grounded"] is True for a in t["assessments"])
 
 
-def test_26_quote_grounding_accepts_rule_text_excerpt():
+def test_26_quote_from_rule_text_is_not_evidence_and_denies():
+    # v3.1: a quote copied from the rule itself proves nothing about the intent.
     c = mod.IntentMandateGuard()
     mid = make_mandate(c)
     gl.llm_reply = {
         "assessments": [
             {"index": 0, "outcome": "PASS", "certainty": "solid", "quote": "must not exceed 50 bps"},
-            {"index": 1, "outcome": "PASS", "certainty": "solid", "quote": "uniswap-v3-router.eth"},
+            {"index": 1, "outcome": "PASS", "certainty": "solid", "quote": "USDC"},
         ]
     }
     as_addr(OPERATOR)
     tid = c.issue_ticket(mid, 1, VALID_INTENT, 1000, 300)
-    assert c.get_ticket(tid)["state"] == "ACTIVE"
+    t = c.get_ticket(tid)
+    assert t["state"] == "DENIED"
+    assert t["assessments"][0]["grounded"] is False
 
 
 def test_27_fabricating_quote_downgrades_pass_solid_to_ambiguous_and_denies():
@@ -183,8 +186,8 @@ def test_33_validator_consensus_accepts_different_quotes_with_same_outcome():
         },
         {
             "assessments": [
-                {"index": 0, "outcome": "PASS", "certainty": "solid", "quote": "exceed 50 bps"},
-                {"index": 1, "outcome": "PASS", "certainty": "solid", "quote": "uniswap-v3-router.eth"},
+                {"index": 0, "outcome": "PASS", "certainty": "solid", "quote": "maxSlippageBps:25"},
+                {"index": 1, "outcome": "PASS", "certainty": "solid", "quote": '"tokenIn":"USDC"'},
             ]
         },
     ]

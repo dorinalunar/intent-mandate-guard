@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.0] — 2026-11-20 · Consensus binds the authorization bit (NOT DEPLOYED YET)
+
+| Area | Change |
+|------|--------|
+| Contract | Validators now compare `(index, outcome, authorized)` per rule, where `authorized = PASS + solid + grounded`. Before, only `outcome` was compared, so a leader's "solid" vs a validator's "moderate" agreed while only the leader decided issuance |
+| Contract | Quotes are grounded against the intent only. Rule text is no longer evidence that the intent satisfies the rule; the prompt asks for intent quotes only |
+| Contract | Default anchor `chain_id` is Studio Dev `61997` (was `61999`) |
+| Contract | Per-mandate ticket index uses `mandate_ticket_count` + `mandate_ticket_at` (O(1) per ticket) instead of rewriting one growing JSON list |
+| Contract | `swept_by` stored as lowercase hex like every other address |
+| Contract | Runner unchanged (`py-genlayer:1jb45aa8…`, the SDK this code is written for). Moving to the GenVM v0.4 runner needs the v0.4 import style; see the Ukrainian instructions |
+| Web / env | Explorer links and `.env.example` point to Studio Dev (were Studio) |
+| Adapter | Refuses padded `target`/`method`/`payload` and non-JSON payloads BEFORE redeeming, so a ticket is never burned without an action |
+| Adapter | Requires a `wait_for_finality(ticket_id)` callback and dispatches the external effect only after the redemption is FINALIZED |
+| Tests | 11 new tests in `test/test_v31_fixes.py`; tests 01, 26, 33 updated to the new rules (81 total) |
+
 ## [3.0.0] — 2026-11-19 · Hardening, Address Canonicalization & Verbatim Quote Grounding
 
 | Area | Change |
