@@ -26,7 +26,7 @@ export async function getNativeBalance(address: string): Promise<string> {
 }
 
 export async function fundWithTestGen(address: Address): Promise<string> {
-  const res = await rpcCall<string>("sim_fundAccount", [address, 100]);
+  const res = await rpcCall<string>("sim_fundAccount", [address, 10000000000000000000]);
   return typeof res === "string" ? res : "";
 }
 
