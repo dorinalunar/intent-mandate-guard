@@ -1,4 +1,5 @@
 import { createClient } from "genlayer-js";
+import { studionet } from "genlayer-js/chains";
 import type { CalldataEncodable } from "genlayer-js/types";
 import { CONTRACT_ADDRESS, RPC_URL } from "./config";
 
@@ -8,18 +9,18 @@ export function formatError(err: unknown): string {
   if (typeof err === "string") return err;
   if (!err || typeof err !== "object") return String(err);
   const rec = err as Record<string, unknown>;
+  if (typeof rec.shortMessage === "string" && rec.shortMessage) {
+    const details = typeof rec.details === "string" ? ` (${rec.details})` : "";
+    return `${rec.shortMessage}${details}`;
+  }
   if (typeof rec.message === "string" && rec.message) return rec.message;
   if (rec.data && typeof rec.data === "object") {
     const d = rec.data as Record<string, unknown>;
     if (typeof d.message === "string" && d.message) return d.message;
   }
-  if (rec.cause && typeof rec.cause === "object") {
-    const c = rec.cause as Record<string, unknown>;
-    if (typeof c.message === "string" && c.message) return c.message;
-  }
   try {
     const seen = new WeakSet<object>();
-    const s = JSON.stringify(
+    return JSON.stringify(
       err,
       (_k, v) => {
         if (typeof v === "bigint") return v.toString();
@@ -35,16 +36,27 @@ export function formatError(err: unknown): string {
       },
       2,
     );
-    return s || "Unknown error";
   } catch {
     return "Unserializable error object";
   }
 }
 
 function getClient(account?: Address) {
+  const eth =
+    typeof window !== "undefined"
+      ? (window as unknown as { ethereum?: unknown }).ethereum
+      : undefined;
+
   return createClient({
+    chain: {
+      ...studionet,
+      rpcUrls: {
+        default: { http: [RPC_URL] },
+      },
+    },
     endpoint: RPC_URL,
     ...(account ? { account } : {}),
+    ...(eth ? { provider: eth as never } : {}),
   });
 }
 
@@ -114,6 +126,9 @@ export async function writeContract(
   method: string,
   args: unknown[] = [],
 ): Promise<string> {
+  if (!from || !from.startsWith("0x")) {
+    throw new Error("Wallet address is missing. Reconnect MetaMask.");
+  }
   try {
     const client = getClient(from);
     const txHash = await client.writeContract({
