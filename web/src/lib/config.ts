@@ -5,7 +5,7 @@ export const STUDIO_URL =
 export const EXPLORER_BASE = "https://explorer-studio-dev.genlayer.com";
 
 export const CONTRACT_ADDRESS = "0xcB45206f7162BFc5427Df038F750B1F3705e0c5a";
-export const EXPLORER = STUDIO_URL;
+export const EXPLORER = EXPLORER_BASE;
 export const GITHUB = "https://github.com/dorinalunar/intent-mandate-guard";
 
 export const DEFAULT_OPERATOR = "0x38409cca5f5ca70f3fe189638a87862318b478dd";
@@ -19,5 +19,5 @@ export const CALL_TX_2 =
   "0x62048c591d8e3814b006bfbe813a9f0a69c2d6833943c56f881d8b814967886d";
 
 export function txUrl(hash: string): string {
-  return hash ? `${EXPLORER_BASE}/tx/${hash}` : STUDIO_URL;
+  return hash ? `${EXPLORER_BASE}/tx/${hash}` : EXPLORER;
 }
